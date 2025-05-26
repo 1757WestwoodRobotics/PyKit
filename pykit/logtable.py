@@ -1,0 +1,150 @@
+from typing import Any
+from pykit.logvalue import LogValue
+
+
+class LogTable:
+    """A table of loggable values for a single timestamp."""
+
+    prefix: str
+    depth: int
+    _timestamp: int
+    data: dict[str, LogValue]
+
+    def __init__(self, timestamp: int, prefix="/") -> None:
+        """
+        Constructor for the LogTable.
+
+        :param timestamp: The timestamp for the log entries in this table.
+        :param prefix: The prefix for the log entries.
+        """
+        self._timestamp = timestamp
+        self.prefix = prefix
+        self.depth = 0
+        self.data: dict[str, LogValue] = {}
+
+    def writeAllowed(
+        self,
+        key: str,
+        logType: LogValue.LoggableType,
+        customType: str,
+    ) -> bool:
+        """
+        Checks if a write operation is allowed for a given key and type.
+        Prevents changing the type of a log entry.
+        """
+        if (currentVal := self.data.get(key)) is None:
+            return True
+        if currentVal.log_type != logType:
+            print(
+                f"Failed to write {key}:\nAttempted {logType} but type is {currentVal.log_type}"
+            )
+            return False
+        if customType != currentVal.custom_type:
+            print(
+                f"Failed to write {key}:\nAttempted {customType} but type is {currentVal.custom_type}"
+            )
+            return False
+        return True
+
+    def put(self, key: str, value: Any, typeStr: str = ""):
+        """
+        Puts a value into the log table.
+        The value is wrapped in a LogValue object.
+        """
+        log_value = LogValue(value, typeStr)
+        if self.writeAllowed(key, log_value.log_type, log_value.custom_type):
+            self.data[key] = log_value
+
+    def get(self, key: str) -> Any:
+        """Gets a value from the log table."""
+        if (log_value := self.data.get(key)) is not None:
+            return log_value.value
+        return None
+
+    def getRaw(self, key: str, defaultValue: bytes) -> bytes:
+        """Gets a raw value from the log table."""
+        if (
+            log_value := self.data.get(key)
+        ) is not None and log_value.log_type == LogValue.LoggableType.Raw:
+            return log_value.value
+        return defaultValue
+
+    def getBoolean(self, key: str, defaultValue: bool) -> bool:
+        """Gets a boolean value from the log table."""
+        if (
+            log_value := self.data.get(key)
+        ) is not None and log_value.log_type == LogValue.LoggableType.Boolean:
+            return log_value.value
+        return defaultValue
+
+    def getInteger(self, key: str, defaultValue: int) -> int:
+        """Gets an integer value from the log table."""
+        if (
+            log_value := self.data.get(key)
+        ) is not None and log_value.log_type == LogValue.LoggableType.Integer:
+            return log_value.value
+        return defaultValue
+
+    def getFloat(self, key: str, defaultValue: float) -> float:
+        """Gets a float value from the log table."""
+        if (
+            log_value := self.data.get(key)
+        ) is not None and log_value.log_type == LogValue.LoggableType.Float:
+            return log_value.value
+        return defaultValue
+
+    def getDouble(self, key: str, defaultValue: float) -> float:
+        """Gets a double value from the log table."""
+        if (
+            log_value := self.data.get(key)
+        ) is not None and log_value.log_type == LogValue.LoggableType.Double:
+            return log_value.value
+        return defaultValue
+
+    def getString(self, key: str, defaultValue: str) -> str:
+        """Gets a string value from the log table."""
+        if (
+            log_value := self.data.get(key)
+        ) is not None and log_value.log_type == LogValue.LoggableType.String:
+            return log_value.value
+        return defaultValue
+
+    def getBooleanArray(self, key: str, defaultValue: list[bool]) -> list[bool]:
+        """Gets a boolean array value from the log table."""
+        if (
+            log_value := self.data.get(key)
+        ) is not None and log_value.log_type == LogValue.LoggableType.BooleanArray:
+            return log_value.value
+        return defaultValue
+
+    def getIntegerArray(self, key: str, defaultValue: list[int]) -> list[int]:
+        """Gets an integer array value from the log table."""
+        if (
+            log_value := self.data.get(key)
+        ) is not None and log_value.log_type == LogValue.LoggableType.IntegerArray:
+            return log_value.value
+        return defaultValue
+
+    def getFloatArray(self, key: str, defaultValue: list[float]) -> list[float]:
+        """Gets a float array value from the log table."""
+        if (
+            log_value := self.data.get(key)
+        ) is not None and log_value.log_type == LogValue.LoggableType.FloatArray:
+            return log_value.value
+        return defaultValue
+
+    def getDoubleArray(self, key: str, defaultValue: list[float]) -> list[float]:
+        """Gets a double array value from the log table."""
+        if (
+            log_value := self.data.get(key)
+        ) is not None and log_value.log_type == LogValue.LoggableType.DoubleArray:
+            return log_value.value
+        return defaultValue
+
+    def getStringArray(self, key: str, defaultValue: list[str]) -> list[str]:
+        """Gets a string array value from the log table."""
+        if (
+            log_value := self.data.get(key)
+        ) is not None and log_value.log_type == LogValue.LoggableType.StringArray:
+            return log_value.value
+        return defaultValue
