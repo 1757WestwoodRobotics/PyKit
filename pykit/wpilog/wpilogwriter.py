@@ -1,63 +1,241 @@
-import wpiutil.log
+import os
+import random
+import datetime
+
+from hal import MatchType
+from wpilib import DataLogManager, RobotBase, RobotController
+from wpiutil.log import DataLog
+
 from pykit.logtable import LogTable
 from pykit.logvalue import LogValue
+from pykit.wpilog import wpilogconstants
 
 
 class WPILOGWriter:
     """Writes a LogTable to a .wpilog file."""
 
-    def __init__(self, filename: str | None = None, extra_header: str = ""):
-        """
-        Constructor for WPILOGWriter.
+    log: DataLog
+    defaultPathRio: str = "/U/logs"
+    defaultPathSim: str = "logs"
 
-        :param filename: The path to the .wpilog file.
-        :param extra_header: An extra header to write to the log file.
-        """
-        if filename is None:
-            filename = "robotlog.wpilog"
-        self.log = wpiutil.log.DataLog(dir=filename, extra_header=extra_header)
-        self.entries = {}
+    folder: str
+    filename: str
+    randomIdentifier: str
+    dsAttachedTime: int
+    autoRename: bool
+    logDate: datetime.datetime | None
+    logMatchText: str
 
-    def write(self, table: LogTable):
-        """
-        Writes the contents of a LogTable to the log file.
+    isOpen: bool = False
+    lastTable: LogTable
+    timestampId: int
+    entryIds: dict[str, int]
+    entryTypes: dict[str, LogValue.LoggableType]
+    entryUnits: dict[str, str]
 
-        :param table: The LogTable to write.
-        """
-        for key, log_value in table.data.items():
-            if key not in self.entries:
-                entry_type = log_value.log_type.getWPILOGType()
-                if log_value.custom_type:
-                    entry_type += ":" + log_value.custom_type
-                self.entries[key] = wpiutil.log.DataLogEntry(self.log, key, entry_type)
+    def __init__(self, filename: str | None = None):
+        path = self.defaultPathSim if RobotBase.isSimulation() else self.defaultPathRio
 
-            entry = self.entries[key]
-            value = log_value.value
-            timestamp = table._timestamp
+        self.randomIdentifier = "%04X" % random.randint(0, 0xFFFF)
 
-            if log_value.log_type == LogValue.LoggableType.Boolean:
-                self.log.appendBoolean(entry, value, timestamp)
-            elif log_value.log_type == LogValue.LoggableType.Integer:
-                self.log.appendInteger(entry, value, timestamp)
-            elif log_value.log_type == LogValue.LoggableType.Float:
-                self.log.appendFloat(entry, value, timestamp)
-            elif log_value.log_type == LogValue.LoggableType.Double:
-                self.log.appendDouble(entry, value, timestamp)
-            elif log_value.log_type == LogValue.LoggableType.String:
-                self.log.appendString(entry, value, timestamp)
-            elif log_value.log_type == LogValue.LoggableType.BooleanArray:
-                self.log.appendBooleanArray(entry, value, timestamp)
-            elif log_value.log_type == LogValue.LoggableType.IntegerArray:
-                self.log.appendIntegerArray(entry, value, timestamp)
-            elif log_value.log_type == LogValue.LoggableType.FloatArray:
-                self.log.appendFloatArray(entry, value, timestamp)
-            elif log_value.log_type == LogValue.LoggableType.DoubleArray:
-                self.log.appendDoubleArray(entry, value, timestamp)
-            elif log_value.log_type == LogValue.LoggableType.StringArray:
-                self.log.appendStringArray(entry, value, timestamp)
-            elif log_value.log_type == LogValue.LoggableType.Raw:
-                self.log.appendRaw(entry, value, timestamp)
+        self.folder = path
+        self.filename = (
+            filename
+            if filename is not None
+            else f"pykit_{self.randomIdentifier}.wpilog"
+        )
+        self.autoRename = True
 
-    def finish(self):
-        """Finishes writing to the log file."""
-        self.log.finish()
+    def start(self):
+        # create folder if necessary
+        if not os.path.exists(self.folder):
+            os.makedirs(self.folder)
+
+        # delete log if it exists
+        fullPath = os.path.join(self.folder, self.filename)
+        if os.path.exists(fullPath):
+            os.remove(fullPath)
+
+        # create a new log
+        print(f"Creating WPILOG file at {fullPath}")
+        DataLogManager.start(self.folder, self.filename)
+        self.log = DataLogManager.getLog()
+
+        self.isOpen = True
+        self.timestampId = self.log.start(
+            "/Timestamp",
+            LogValue.LoggableType.Integer.getWPILOGType(),
+            wpilogconstants.entryMetadata,
+            0,
+        )
+        lastTable = LogTable(0)
+
+        entryIds: dict[str, int] = {}
+        entryTypes: dict[str, LogValue.LoggableType] = {}
+        entryUnits: dict[str, str] = {}
+        self.logDate = None
+        self.logMatchText = f"pykit_{self.randomIdentifier}"
+
+    def end(self):
+        self.log.stop()
+        DataLogManager.stop()
+
+    def putTable(self, table: LogTable):
+        if not self.isOpen:
+            return
+        if self.autoRename:
+            # rename log if necessary
+            if self.logDate is None:
+                if (
+                    table.get("DriverStation/DSAttached", False)
+                    and table.get("SystemStats/SystemTimeValid", False)
+                ) or RobotBase.isSimulation():
+                    if self.dsAttachedTime == 0:
+                        self.dsAttachedTime = RobotController.getFPGATime() / 1e6
+                    elif (
+                        RobotController.getFPGATime() / 1e6 - self.dsAttachedTime
+                    ) > 5 or RobotBase.isSimulation():
+                        self.logDate = datetime.datetime.now()
+                else:
+                    self.dsAttachedTime = 0
+
+                matchType: MatchType
+                match table.get("DriverStation/MatchType", 0):
+                    case 1:
+                        matchType = MatchType.practice
+                    case 2:
+                        matchType = MatchType.qualification
+                    case 3:
+                        matchType = MatchType.elimination
+                    case _:
+                        matchType = MatchType.none
+
+                if self.logMatchText == "" and matchType != MatchType.none:
+                    match matchType:
+                        case MatchType.practice:
+                            self.logMatchText = "p"
+                        case MatchType.qualification:
+                            self.logMatchText = "q"
+                        case MatchType.elimination:
+                            self.logMatchText = "e"
+                        case _:
+                            self.logMatchText = "u"
+                    self.logMatchText += str(table.get("DriverStation/MatchNumber", 0))
+
+                # update filename
+                filename = "pykit_"
+                if self.logDate is not None:
+                    filename += self.logDate.strftime("%Y%m%d_%H%M%S")
+                else:
+                    filename += self.randomIdentifier
+                eventName = (
+                    table.get("DriverStation/EventName", "").lower().replace(" ", "_")
+                )
+                if eventName != "":
+                    filename += f"_{eventName}"
+                if self.logMatchText != "":
+                    filename += f"_{self.logMatchText}"
+                filename += ".wpilog"
+                if filename != self.filename:
+                    print(f"Renaming log to {filename}")
+                    DataLogManager.stop()
+                    os.rename(
+                        os.path.join(self.folder, self.filename),
+                        os.path.join(self.folder, filename),
+                    )
+                    DataLogManager.start(self.folder, filename)
+                    self.log = DataLogManager.getLog()
+                    self.timestampId = self.log.start(
+                        "/Timestamp",
+                        LogValue.LoggableType.Integer.getWPILOGType(),
+                        wpilogconstants.entryMetadata,
+                        0,
+                    )
+                    self.filename = filename
+
+        # write timestamp
+        self.log.appendInteger(
+            self.timestampId, table.getTimestamp(), table.getTimestamp()
+        )
+
+        # get new and old data
+        newMap = table.getAll()
+        oldMap = self.lastTable.getAll()
+
+        # encode fields
+        for key, newValue in newMap.items():
+            fieldType = newValue.log_type
+            appendData = False
+
+            if key not in entryIds:  # new field
+                entryId = self.log.start(
+                    key,
+                    newValue.log_type.getWPILOGType(),
+                    wpilogconstants.entryMetadata,
+                    table.getTimestamp(),
+                )
+                entryIds[key] = entryId
+                entryTypes[key] = newValue.log_type
+                entryUnits[key] = ""
+
+                appendData = True
+            elif newValue != oldMap.get(key):  # existing field changed
+                appendData = True
+
+            # check if type changed
+            elif newValue.log_type != entryTypes[key]:
+                print(
+                    f"Type of {key} changed from {entryTypes[key]} to {newValue.log_type}, skipping log"
+                )
+                continue
+
+            if appendData:
+                entryId = entryIds[key]
+                match fieldType:
+                    case LogValue.LoggableType.Raw:
+                        self.log.appendRaw(
+                            entryId, newValue.value, table.getTimestamp()
+                        )
+                    case LogValue.LoggableType.Boolean:
+                        self.log.appendBoolean(
+                            entryId, newValue.value, table.getTimestamp()
+                        )
+                    case LogValue.LoggableType.Integer:
+                        self.log.appendInteger(
+                            entryId, newValue.value, table.getTimestamp()
+                        )
+                    case LogValue.LoggableType.Float:
+                        self.log.appendFloat(
+                            entryId, newValue.value, table.getTimestamp()
+                        )
+                    case LogValue.LoggableType.Double:
+                        self.log.appendDouble(
+                            entryId, newValue.value, table.getTimestamp()
+                        )
+                    case LogValue.LoggableType.String:
+                        self.log.appendString(
+                            entryId, newValue.value, table.getTimestamp()
+                        )
+                    case LogValue.LoggableType.BooleanArray:
+                        self.log.appendBooleanArray(
+                            entryId, newValue.value, table.getTimestamp()
+                        )
+                    case LogValue.LoggableType.IntegerArray:
+                        self.log.appendIntegerArray(
+                            entryId, newValue.value, table.getTimestamp()
+                        )
+                    case LogValue.LoggableType.FloatArray:
+                        self.log.appendFloatArray(
+                            entryId, newValue.value, table.getTimestamp()
+                        )
+                    case LogValue.LoggableType.DoubleArray:
+                        self.log.appendDoubleArray(
+                            entryId, newValue.value, table.getTimestamp()
+                        )
+                    case LogValue.LoggableType.StringArray:
+                        self.log.appendStringArray(
+                            entryId, newValue.value, table.getTimestamp()
+                        )
+
+            self.log.flush()
+            self.lastTable = table

@@ -89,11 +89,11 @@ class LogValue:
 
         def getWPILOGType(self) -> str:
             """Returns the WPILOG type string for this type."""
-            return LogValue.LoggableType.wpilogTypes[self.value - 1]
+            return LogValue.LoggableType.wpilogTypes.value[self.value - 1]
 
         def getNT4Type(self) -> str:
             """Returns the NT4 type string for this type."""
-            return LogValue.LoggableType.nt4Types[self.value - 1]
+            return LogValue.LoggableType.nt4Types.value[self.value - 1]
 
         @staticmethod
         def fromWPILOGType(typeStr: str) -> "LogValue.LoggableType":

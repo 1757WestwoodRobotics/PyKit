@@ -90,7 +90,7 @@ class LoggedRobot(IterativeRobotBase):
 
         print("Robot startup complete!")
 
-        while not self.isExited():
+        while True:
             if self.useTiming:
                 currentTime = RobotController.getFPGATime()  # microseconds
                 if self._nextCycleUs < currentTime:
@@ -115,7 +115,7 @@ class LoggedRobot(IterativeRobotBase):
             self._loopFunc()
 
             if not Logger.isReplay():
-                self.writer.write(log_table)
+                self.writer.putTable(log_table)
 
     def robotPeriodic(self):
         """

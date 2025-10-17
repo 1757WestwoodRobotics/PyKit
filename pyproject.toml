@@ -11,11 +11,11 @@ authors = [{ name = "Luke Maxwell", email = "luke@whsrobotics.org" }]
 license = "MIT"
 keywords = ["pykit"]
 dependencies = [
-    "pyntcore >=2025.1.1",
-    "robotpy-wpimath >=2025.1.1",
-    "robotpy-commands-v2 >=2025.1.1",
-    "robotpy-wpiutil >=2025.1.1",
-    "robotpy-hal >=2025.1.1"
+    "pyntcore >=2025.3.2.3",
+    "robotpy-wpimath >=2025.3.2.3",
+    "robotpy-commands-v2 >=2025.3.2.3",
+    "robotpy-wpiutil >=2025.3.2.3",
+    "robotpy-hal >=2025.3.2.3"
 ]
 requires-python = ">=3.10"
 

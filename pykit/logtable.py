@@ -22,6 +22,10 @@ class LogTable:
         self.depth = 0
         self.data: dict[str, LogValue] = {}
 
+    def getTimestamp(self) -> int:
+        """Returns the timestamp of the log table."""
+        return self._timestamp
+
     def writeAllowed(
         self,
         key: str,
@@ -32,7 +36,7 @@ class LogTable:
         Checks if a write operation is allowed for a given key and type.
         Prevents changing the type of a log entry.
         """
-        if (currentVal := self.data.get(key)) is None:
+        if (currentVal := self.data.get(self.prefix + key)) is None:
             return True
         if currentVal.log_type != logType:
             print(
@@ -55,16 +59,16 @@ class LogTable:
         if self.writeAllowed(key, log_value.log_type, log_value.custom_type):
             self.data[key] = log_value
 
-    def get(self, key: str) -> Any:
+    def get(self, key: str, defaultValue: Any) -> Any:
         """Gets a value from the log table."""
-        if (log_value := self.data.get(key)) is not None:
+        if (log_value := self.data.get(self.prefix + key)) is not None:
             return log_value.value
-        return None
+        return defaultValue
 
     def getRaw(self, key: str, defaultValue: bytes) -> bytes:
         """Gets a raw value from the log table."""
         if (
-            log_value := self.data.get(key)
+            log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Raw:
             return log_value.value
         return defaultValue
@@ -148,3 +152,26 @@ class LogTable:
         ) is not None and log_value.log_type == LogValue.LoggableType.StringArray:
             return log_value.value
         return defaultValue
+
+    def getAll(self, subtableOnly: bool = False) -> dict[str, LogValue]:
+        """Returns all log values in the table."""
+        if not subtableOnly:
+            return self.data
+        else:
+            return {
+                key: value
+                for key, value in self.data.items()
+                if key.startswith(self.prefix)
+            }
+
+    def getSubtable(self, subtablePrefix: str) -> "LogTable":
+        """
+        Returns a subtable containing only entries with the given prefix.
+
+        :param subtablePrefix: The prefix to filter entries by.
+        :return: A new LogTable containing only the filtered entries.
+        """
+        subtable = LogTable(self.getTimestamp(), self.prefix + subtablePrefix)
+        subtable.data = self.data
+        subtable.depth = self.depth + 1
+        return subtable
