@@ -57,7 +57,7 @@ class LogTable:
         """
         log_value = LogValue(value, typeStr)
         if self.writeAllowed(key, log_value.log_type, log_value.custom_type):
-            self.data[key] = log_value
+            self.data[self.prefix + key] = log_value
 
     def get(self, key: str, defaultValue: Any) -> Any:
         """Gets a value from the log table."""
@@ -76,7 +76,7 @@ class LogTable:
     def getBoolean(self, key: str, defaultValue: bool) -> bool:
         """Gets a boolean value from the log table."""
         if (
-            log_value := self.data.get(key)
+            log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Boolean:
             return log_value.value
         return defaultValue
@@ -84,7 +84,7 @@ class LogTable:
     def getInteger(self, key: str, defaultValue: int) -> int:
         """Gets an integer value from the log table."""
         if (
-            log_value := self.data.get(key)
+            log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Integer:
             return log_value.value
         return defaultValue
@@ -92,7 +92,7 @@ class LogTable:
     def getFloat(self, key: str, defaultValue: float) -> float:
         """Gets a float value from the log table."""
         if (
-            log_value := self.data.get(key)
+            log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Float:
             return log_value.value
         return defaultValue
@@ -100,7 +100,7 @@ class LogTable:
     def getDouble(self, key: str, defaultValue: float) -> float:
         """Gets a double value from the log table."""
         if (
-            log_value := self.data.get(key)
+            log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Double:
             return log_value.value
         return defaultValue
@@ -108,7 +108,7 @@ class LogTable:
     def getString(self, key: str, defaultValue: str) -> str:
         """Gets a string value from the log table."""
         if (
-            log_value := self.data.get(key)
+            log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.String:
             return log_value.value
         return defaultValue
@@ -116,7 +116,7 @@ class LogTable:
     def getBooleanArray(self, key: str, defaultValue: list[bool]) -> list[bool]:
         """Gets a boolean array value from the log table."""
         if (
-            log_value := self.data.get(key)
+            log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.BooleanArray:
             return log_value.value
         return defaultValue
@@ -124,7 +124,7 @@ class LogTable:
     def getIntegerArray(self, key: str, defaultValue: list[int]) -> list[int]:
         """Gets an integer array value from the log table."""
         if (
-            log_value := self.data.get(key)
+            log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.IntegerArray:
             return log_value.value
         return defaultValue
@@ -132,7 +132,7 @@ class LogTable:
     def getFloatArray(self, key: str, defaultValue: list[float]) -> list[float]:
         """Gets a float array value from the log table."""
         if (
-            log_value := self.data.get(key)
+            log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.FloatArray:
             return log_value.value
         return defaultValue
@@ -140,7 +140,7 @@ class LogTable:
     def getDoubleArray(self, key: str, defaultValue: list[float]) -> list[float]:
         """Gets a double array value from the log table."""
         if (
-            log_value := self.data.get(key)
+            log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.DoubleArray:
             return log_value.value
         return defaultValue
@@ -148,7 +148,7 @@ class LogTable:
     def getStringArray(self, key: str, defaultValue: list[str]) -> list[str]:
         """Gets a string array value from the log table."""
         if (
-            log_value := self.data.get(key)
+            log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.StringArray:
             return log_value.value
         return defaultValue
