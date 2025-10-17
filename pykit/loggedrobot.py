@@ -15,7 +15,6 @@ from pykit.logger import Logger
 from pykit.logtable import LogTable
 from pykit.wpilog.wpilogwriter import WPILOGWriter
 from pykit.wpilog.wpilogreader import WPILOGReader
-from pykit.inputs.loggableds import DSIO
 from pykit.autolog import autolog
 import os
 from dataclasses import dataclass
@@ -66,7 +65,6 @@ class LoggedRobot(IterativeRobotBase):
             self.writer = WPILOGWriter()
 
         self.io = RobotIO()
-        self.ds_io = DSIO()
 
     def endCompetition(self) -> None:
         """Called at the end of the competition to clean up resources."""

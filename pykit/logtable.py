@@ -26,6 +26,10 @@ class LogTable:
         """Returns the timestamp of the log table."""
         return self._timestamp
 
+    def setTimestamp(self, timestamp: int) -> None:
+        """Sets the timestamp of the log table."""
+        self._timestamp = timestamp
+
     def writeAllowed(
         self,
         key: str,
@@ -164,7 +168,7 @@ class LogTable:
                 if key.startswith(self.prefix)
             }
 
-    def getSubtable(self, subtablePrefix: str) -> "LogTable":
+    def getSubTable(self, subtablePrefix: str) -> "LogTable":
         """
         Returns a subtable containing only entries with the given prefix.
 
