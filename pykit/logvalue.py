@@ -30,8 +30,8 @@ class LogValue:
             self.log_type = LogValue.LoggableType.Raw
         elif isinstance(value, list):
             if len(value) == 0:
-                raise TypeError("Cannot log empty lists")
-            if all(isinstance(x, bool) for x in value):
+                self.log_type = LogValue.LoggableType.IntegerArray
+            elif all(isinstance(x, bool) for x in value):
                 self.log_type = LogValue.LoggableType.BooleanArray
             elif all(isinstance(x, int) for x in value):
                 self.log_type = LogValue.LoggableType.IntegerArray
@@ -43,6 +43,14 @@ class LogValue:
                 raise TypeError("Unsupported list type for LogValue")
         else:
             raise TypeError(f"Unsupported type for LogValue: {type(value)}")
+
+    @staticmethod
+    def withType(log_type: "LogValue.LoggableType", data: Any) -> "LogValue":
+        val = LogValue(1)
+        val.log_type = log_type
+        val.value = data
+        return val
+
 
     class LoggableType(Enum):
         """Enum for the different types of loggable values."""

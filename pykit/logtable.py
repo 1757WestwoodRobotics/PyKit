@@ -60,8 +60,12 @@ class LogTable:
         The value is wrapped in a LogValue object.
         """
         log_value = LogValue(value, typeStr)
+        self.putValue(key, log_value)
+
+    def putValue(self, key: str, log_value: LogValue):
         if self.writeAllowed(key, log_value.log_type, log_value.custom_type):
             self.data[self.prefix + key] = log_value
+
 
     def get(self, key: str, defaultValue: Any) -> Any:
         """Gets a value from the log table."""

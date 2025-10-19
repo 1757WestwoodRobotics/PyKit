@@ -63,13 +63,14 @@ class LoggedRobot(IterativeRobotBase):
 
         if not Logger.isReplay():
             self.writer = WPILOGWriter()
+            self.writer.start()
 
         self.io = RobotIO()
 
     def endCompetition(self) -> None:
         """Called at the end of the competition to clean up resources."""
         if not Logger.isReplay() and hasattr(self, "writer"):
-            self.writer.finish()
+            self.writer.end()
         hal.stopNotifier(self.notifier)
         hal.cleanNotifier(self.notifier)
 
@@ -79,14 +80,16 @@ class LoggedRobot(IterativeRobotBase):
         Handles timing, logging, and calling the periodic functions.
         """
         self.robotInit()
-        hal.observeUserProgramStarting()
+
+        # TODO: handle autolog outputs
 
         if self.isSimulation():
             self._simulationInit()
 
         self.initEnd = RobotController.getFPGATime()
-
+        Logger.periodicAfterUser(self.initEnd, 0)
         print("Robot startup complete!")
+        hal.observeUserProgramStarting()
 
         while True:
             if self.useTiming:
@@ -100,29 +103,15 @@ class LoggedRobot(IterativeRobotBase):
                         break
                 self._nextCycleUs += self._periodUs
 
-            timestamp = RobotController.getFPGATime()
-            log_table = LogTable(timestamp)
-            Logger.init(log_table)
+            periodicBeforeStart = RobotController.getFPGATime()
+            Logger.periodicBeforeUser()
 
-            if Logger.isReplay():
-                Logger.replaySource.updateTable(log_table)
-
-            Logger.processInputs("/IO", self.io)
-            Logger.processInputs("/DS", self.ds_io)
-
+            userCodeStart = RobotController.getFPGATime()
             self._loopFunc()
+            userCodeEnd = RobotController.getFPGATime()
 
+            Logger.periodicAfterUser(
+                userCodeEnd - userCodeStart, userCodeStart - periodicBeforeStart
+            )
             if not Logger.isReplay():
-                self.writer.putTable(log_table)
-
-    def robotPeriodic(self):
-        """
-        Called periodically during all modes.
-        This is where the user can interact with the I/O objects.
-        """
-        # This is where the user would use the IO object
-        if not Logger.isReplay():
-            self.io.voltage = RobotController.getBatteryVoltage()
-            self.ds_io.update()
-
-        Logger.recordOutput("voltage", self.io.voltage)
+                self.writer.putTable(Logger.entry)

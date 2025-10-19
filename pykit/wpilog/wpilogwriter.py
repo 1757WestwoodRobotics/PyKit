@@ -21,7 +21,7 @@ class WPILOGWriter:
     folder: str
     filename: str
     randomIdentifier: str
-    dsAttachedTime: int
+    dsAttachedTime: int = 0
     autoRename: bool
     logDate: datetime.datetime | None
     logMatchText: str
@@ -58,7 +58,10 @@ class WPILOGWriter:
 
         # create a new log
         print(f"Creating WPILOG file at {fullPath}")
+        DataLogManager.stop()  # ensure its fully stopped
         DataLogManager.start(self.folder, self.filename)
+        DataLogManager.logNetworkTables(False)
+        DataLogManager.logConsoleOutput(True)
         self.log = DataLogManager.getLog()
 
         self.isOpen = True
@@ -68,17 +71,17 @@ class WPILOGWriter:
             wpilogconstants.entryMetadata,
             0,
         )
-        lastTable = LogTable(0)
+        self.lastTable = LogTable(0)
 
-        entryIds: dict[str, int] = {}
-        entryTypes: dict[str, LogValue.LoggableType] = {}
-        entryUnits: dict[str, str] = {}
+        self.entryIds: dict[str, int] = {}
+        self.entryTypes: dict[str, LogValue.LoggableType] = {}
+        self.entryUnits: dict[str, str] = {}
         self.logDate = None
         self.logMatchText = f"pykit_{self.randomIdentifier}"
 
     def end(self):
         self.log.stop()
-        DataLogManager.stop()
+        # DataLogManager.stop()
 
     def putTable(self, table: LogTable):
         if not self.isOpen:
@@ -167,30 +170,30 @@ class WPILOGWriter:
             fieldType = newValue.log_type
             appendData = False
 
-            if key not in entryIds:  # new field
+            if key not in self.entryIds:  # new field
                 entryId = self.log.start(
                     key,
                     newValue.log_type.getWPILOGType(),
                     wpilogconstants.entryMetadata,
                     table.getTimestamp(),
                 )
-                entryIds[key] = entryId
-                entryTypes[key] = newValue.log_type
-                entryUnits[key] = ""
+                self.entryIds[key] = entryId
+                self.entryTypes[key] = newValue.log_type
+                self.entryUnits[key] = ""
 
                 appendData = True
             elif newValue != oldMap.get(key):  # existing field changed
                 appendData = True
 
             # check if type changed
-            elif newValue.log_type != entryTypes[key]:
+            elif newValue.log_type != self.entryTypes[key]:
                 print(
-                    f"Type of {key} changed from {entryTypes[key]} to {newValue.log_type}, skipping log"
+                    f"Type of {key} changed from {self.entryTypes[key]} to {newValue.log_type}, skipping log"
                 )
                 continue
 
             if appendData:
-                entryId = entryIds[key]
+                entryId = self.entryIds[key]
                 match fieldType:
                     case LogValue.LoggableType.Raw:
                         self.log.appendRaw(

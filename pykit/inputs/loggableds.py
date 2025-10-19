@@ -2,19 +2,23 @@ from wpilib import DriverStation
 from wpilib.simulation import DriverStationSim
 
 from pykit.logtable import LogTable
+from pykit.logvalue import LogValue
 
 
 class LoggedDriverStation:
     """A dataclass for holding Driver Station I/O data."""
 
-    def saveToTable(self, table: LogTable):
+    @classmethod
+    def saveToTable(cls, table: LogTable):
         """Saves the current Driver Station data to the log table."""
-        table.put("AllianceStation", DriverStation.getLocation())
+        if location := DriverStation.getLocation() == None:
+            location = 0
+        table.put("AllianceStation", int(location))
         table.put("EventName", DriverStation.getEventName())
         table.put("GameSpecificMessage", DriverStation.getGameSpecificMessage())
         table.put("MatchNumber", DriverStation.getMatchNumber())
         table.put("ReplayNumber", DriverStation.getReplayNumber())
-        table.put("MatchType", DriverStation.getMatchType())
+        table.put("MatchType", DriverStation.getMatchType().value)
         table.put("MatchTime", DriverStation.getMatchTime())
 
         table.put("Enabled", DriverStation.isEnabled())
@@ -36,7 +40,9 @@ class LoggedDriverStation:
             povValues = []
             for j in range(povCount):
                 povValues.append(DriverStation.getStickPOV(i, j))
-            joystickTable.put("POVs", povValues)
+            joystickTable.putValue(
+                "POVs", LogValue.withType(LogValue.LoggableType.IntegerArray, povValues)
+            )
 
             axisCount = DriverStation.getStickAxisCount(i)
             axisValues = []
@@ -45,10 +51,14 @@ class LoggedDriverStation:
                 axisValues.append(DriverStation.getStickAxis(i, j))
                 axisTypes.append(DriverStation.getJoystickAxisType(i, j))
 
-            joystickTable.put("AxesValues", axisValues)
+            joystickTable.putValue(
+                "AxesValues",
+                LogValue.withType(LogValue.LoggableType.DoubleArray, axisValues),
+            )
             joystickTable.put("AxisTypes", axisTypes)
 
-    def loadFromTable(self, table: LogTable):
+    @classmethod
+    def loadFromTable(cls, table: LogTable):
         DriverStationSim.setAllianceStationId(
             table.get("AllianceStation", DriverStation.Alliance.kRed1)
         )

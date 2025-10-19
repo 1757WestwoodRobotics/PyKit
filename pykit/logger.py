@@ -1,6 +1,7 @@
 from typing import Optional
 
 from wpilib import RobotController
+from pykit.inputs.loggableds import LoggedDriverStation
 from pykit.logreplaysource import LogReplaySource
 from pykit.logtable import LogTable
 
@@ -33,7 +34,7 @@ class Logger:
         This is only active when not in replay mode.
         """
         if not cls.isReplay():
-            cls.log_table.put(key, value)
+            cls.entry.put(key, value)
 
     @classmethod
     def recordMetadata(cls, key: str, value: str):
@@ -52,14 +53,15 @@ class Logger:
         In normal mode, it calls 'toLog' on the inputs object to record its state.
         In replay mode, it calls 'fromLog' on the inputs object to update its state from the log.
         """
-        if cls.isReplay():
-            inputs.fromLog(cls.log_table, prefix)
-        else:
-            inputs.toLog(cls.log_table, prefix)
+        if cls.running:
+            if cls.isReplay():
+                inputs.fromLog(cls.entry.getSubTable(prefix))
+            else:
+                inputs.toLog(cls.entry.getSubTable(prefix))
 
     @classmethod
     def start(cls):
-        if !cls.running:
+        if not cls.running:
             cls.running = True
             cls.cycleCount = 0
             print("Logger started")
@@ -108,11 +110,47 @@ class Logger:
         cls.cycleCount += 1
         if cls.running:
             entryUpdateStart = RobotController.getFPGATime()
-            if !cls.isReplay():
+            if not cls.isReplay():
                 cls.entry.setTimestamp(RobotController.getFPGATime())
             else:
-                if !cls.replaySource.updateTable(cls.entry):
+                if not cls.replaySource.updateTable(cls.entry):
                     print("End of replay reached")
                     cls.end()
                     exit()
-                    return
+
+            dsStart = RobotController.getFPGATime()
+            if cls.isReplay():
+                LoggedDriverStation.loadFromTable(cls.entry.getSubTable("DriverStation"))
+            dsEnd = RobotController.getFPGATime()
+
+            cls.recordOutput("Logger/EntryUpdateMS", (dsStart - entryUpdateStart) / 1000.0)
+            if cls.isReplay():
+                cls.recordOutput("Logger/DriverStationMS", (dsEnd - dsStart) / 1000.0)
+
+    @classmethod
+    def periodicAfterUser(cls, userCodeLength: int, periodicBeforeLength: int):
+        """Called periodically after user code to finalize the log table."""
+        if cls.running:
+            dsStart = RobotController.getFPGATime()
+            if not cls.isReplay():
+                LoggedDriverStation.saveToTable(cls.entry.getSubTable("DriverStation"))
+            autoLogStart = RobotController.getFPGATime()
+            # TODO: AutoLogOutput periodic check and update
+            radioLogStart = RobotController.getFPGATime()
+            # TODO: RadioLogger
+            radioLogEnd = RobotController.getFPGATime()
+            if not cls.isReplay():
+                cls.recordOutput("Logger/DriverStationMS", (autoLogStart - dsStart) / 1000.0)
+
+            cls.recordOutput("Logger/AutoLogOutputMS", (radioLogStart - autoLogStart) / 1000.0)
+            cls.recordOutput("Logger/RadioLoggerMS", (radioLogEnd - radioLogStart) / 1000.0)
+            cls.recordOutput("LoggedRobot/UserCodeMS", userCodeLength / 1000.0)
+            periodicAfterLength = radioLogEnd - dsStart
+            cls.recordOutput("LoggedRobot/LogPeriodicMS", (periodicBeforeLength + periodicAfterLength) / 1000.0)
+            cls.recordOutput("LoggedRobot/FullCycleMS", (periodicBeforeLength + userCodeLength + periodicAfterLength) / 1000.0)
+
+
+            # TODO: write to logged systems
+
+
+
