@@ -64,7 +64,7 @@ class WPILOGWriter:
         DataLogManager.start(self.folder, self.filename)
         self.log = DataLogManager.getLog()
 
-        self.sOpen = True
+        self.isOpen = True
         self.timestampId = self.log.start(
             "/Timestamp",
             LogValue.LoggableType.Integer.getWPILOGType(),
