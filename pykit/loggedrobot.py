@@ -63,9 +63,9 @@ class LoggedRobot(IterativeRobotBase):
 
         if not Logger.isReplay():
             self.writer = WPILOGWriter()
-            self.writer.start()
 
         self.io = RobotIO()
+
 
     def endCompetition(self) -> None:
         """Called at the end of the competition to clean up resources."""
@@ -90,6 +90,8 @@ class LoggedRobot(IterativeRobotBase):
         Logger.periodicAfterUser(self.initEnd, 0)
         print("Robot startup complete!")
         hal.observeUserProgramStarting()
+
+        self.writer.start()
 
         while True:
             if self.useTiming:

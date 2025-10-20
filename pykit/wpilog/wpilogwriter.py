@@ -16,7 +16,7 @@ class WPILOGWriter:
 
     log: DataLog
     defaultPathRio: str = "/U/logs"
-    defaultPathSim: str = "logs"
+    defaultPathSim: str = "pyLogs"
 
     folder: str
     filename: str
@@ -139,9 +139,10 @@ class WPILOGWriter:
                 if self.logMatchText != "":
                     filename += f"_{self.logMatchText}"
                 filename += ".wpilog"
-                if filename != self.filename:
+                if self.folder != DataLogManager.getLogDir() or self.filename != filename:
                     print(f"[WPILogWriter] Renaming log to {filename}")
                     DataLogManager.stop()
+                    self.log.stop()
                     fullPath = os.path.join(self.folder, self.filename)
                     if os.path.exists(fullPath):
                         print(f"[WPILogWriter] Old file removed ({self.filename})")
@@ -150,6 +151,7 @@ class WPILOGWriter:
                     DataLogManager.logNetworkTables(False)
                     DataLogManager.start(self.folder, filename)
                     self.log = DataLogManager.getLog()
+                    self.log._startFile()
                     self.timestampId = self.log.start(
                         "/Timestamp",
                         LogValue.LoggableType.Integer.getWPILOGType(),

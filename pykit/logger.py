@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 from wpilib import RobotController
 from pykit.inputs.loggableds import LoggedDriverStation
@@ -28,7 +28,7 @@ class Logger:
         return cls.replaySource is not None
 
     @classmethod
-    def recordOutput(cls, key: str, value: any):
+    def recordOutput(cls, key: str, value: Any):
         """
         Records an output value to the log table.
         This is only active when not in replay mode.
