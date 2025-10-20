@@ -52,19 +52,19 @@ class WPILOGWriter:
             os.makedirs(self.folder)
 
         # delete log if it exists
-        fullPath = os.path.join(self.folder, self.filename)
-        if os.path.exists(fullPath):
-            os.remove(fullPath)
 
         # create a new log
-        print(f"Creating WPILOG file at {fullPath}")
+        fullPath = os.path.join(self.folder, self.filename)
+        print(f"[WPILogWriter] Creating WPILOG file at {fullPath}")
         DataLogManager.stop()  # ensure its fully stopped
-        DataLogManager.start(self.folder, self.filename)
+        if os.path.exists(fullPath):
+            print("[WPILogWriter] File exists, overwriting")
+            os.remove(fullPath)
         DataLogManager.logNetworkTables(False)
-        DataLogManager.logConsoleOutput(True)
+        DataLogManager.start(self.folder, self.filename)
         self.log = DataLogManager.getLog()
 
-        self.isOpen = True
+        self.sOpen = True
         self.timestampId = self.log.start(
             "/Timestamp",
             LogValue.LoggableType.Integer.getWPILOGType(),
@@ -140,12 +140,14 @@ class WPILOGWriter:
                     filename += f"_{self.logMatchText}"
                 filename += ".wpilog"
                 if filename != self.filename:
-                    print(f"Renaming log to {filename}")
+                    print(f"[WPILogWriter] Renaming log to {filename}")
                     DataLogManager.stop()
-                    os.rename(
-                        os.path.join(self.folder, self.filename),
-                        os.path.join(self.folder, filename),
-                    )
+                    fullPath = os.path.join(self.folder, self.filename)
+                    if os.path.exists(fullPath):
+                        print(f"[WPILogWriter] Old file removed ({self.filename})")
+                        os.remove(fullPath)
+
+                    DataLogManager.logNetworkTables(False)
                     DataLogManager.start(self.folder, filename)
                     self.log = DataLogManager.getLog()
                     self.timestampId = self.log.start(
@@ -188,7 +190,7 @@ class WPILOGWriter:
             # check if type changed
             elif newValue.log_type != self.entryTypes[key]:
                 print(
-                    f"Type of {key} changed from {self.entryTypes[key]} to {newValue.log_type}, skipping log"
+                    f"[WPILOGWriter] Type of {key} changed from {self.entryTypes[key]} to {newValue.log_type}, skipping log"
                 )
                 continue
 
