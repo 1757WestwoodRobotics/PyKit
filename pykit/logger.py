@@ -33,8 +33,8 @@ class Logger:
         Records an output value to the log table.
         This is only active when not in replay mode.
         """
-        if not cls.isReplay():
-            cls.entry.put(key, value)
+        if cls.running:
+            cls.outputTable.put(key, value)
 
     @classmethod
     def recordMetadata(cls, key: str, value: str):

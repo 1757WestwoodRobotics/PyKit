@@ -179,7 +179,7 @@ class LogTable:
         :param subtablePrefix: The prefix to filter entries by.
         :return: A new LogTable containing only the filtered entries.
         """
-        subtable = LogTable(self.getTimestamp(), self.prefix + subtablePrefix)
+        subtable = LogTable(self.getTimestamp(), self.prefix + subtablePrefix + "/")
         subtable.data = self.data
         subtable.depth = self.depth + 1
         return subtable
