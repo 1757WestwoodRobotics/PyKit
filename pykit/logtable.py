@@ -1,5 +1,9 @@
-from typing import Any
+from functools import partial
+from typing import Any, Generic, Set, TypeVar
+
+from wpiutil import wpistruct
 from pykit.logvalue import LogValue
+from wpiutil.wpistruct import StructDescriptor
 
 
 class LogTable:
@@ -54,18 +58,42 @@ class LogTable:
             return False
         return True
 
+    def addStructSchemaNest(self, structname: str, schema: str):
+        typeString = ":".join(structname.split(":")[1:])
+        key = "/.schema/" + typeString
+        if key in self.data.keys():
+            return
+        self.data[key] = LogValue(schema, "structschema")
+
+    def addStructSchema(self, struct: Any, seen: Set[str]):
+        typeString = wpistruct.getTypeName(struct.__class__)
+        key = "/.schema/" + typeString
+        if key in self.data.keys():
+            return
+        seen.add(typeString)
+        self.data[key] = LogValue(
+            wpistruct.getSchema(struct.__class__).encode(), "structschema"
+        )
+
+        wpistruct.forEachNested(struct.__class__, self.addStructSchemaNest)
+        seen.remove(typeString)
+
     def put(self, key: str, value: Any, typeStr: str = ""):
         """
         Puts a value into the log table.
         The value is wrapped in a LogValue object.
         """
-        log_value = LogValue(value, typeStr)
+        if hasattr(value, "WPIStruct"):
+            # its a struct!
+            self.addStructSchema(value, set())
+            log_value = LogValue(wpistruct.pack(value) ,wpistruct.getTypeName(value.__class__))
+        else:
+            log_value = LogValue(value, typeStr)
         self.putValue(key, log_value)
 
     def putValue(self, key: str, log_value: LogValue):
         if self.writeAllowed(key, log_value.log_type, log_value.custom_type):
             self.data[self.prefix + key] = log_value
-
 
     def get(self, key: str, defaultValue: Any) -> Any:
         """Gets a value from the log table."""

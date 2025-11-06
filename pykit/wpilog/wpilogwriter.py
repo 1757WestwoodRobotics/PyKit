@@ -64,7 +64,7 @@ class WPILOGWriter:
         # DataLogManager.logNetworkTables(False)
         # DataLogManager.start(self.folder, self.filename)
         # self.log = DataLogManager.getLog()
-        self.log = DataLogWriter(self.filename)
+        self.log = DataLogWriter(fullPath)
 
         self.isOpen = True
         self.timestampId = self.log.start(
@@ -155,7 +155,7 @@ class WPILOGWriter:
 
                     # DataLogManager.logNetworkTables(False)
                     # DataLogManager.start(self.folder, filename)
-                    self.log = DataLogWriter(filename)
+                    self.log = DataLogWriter(fullPath)
                     self.log._startFile()
                     self.timestampId = self.log.start(
                         "/Timestamp",

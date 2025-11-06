@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
 from wpilib import RobotController
+from pykit.autolog import AutoLogInputManager, AutoLogOutputManager
 from pykit.inputs.loggableds import LoggedDriverStation
 from pykit.logreplaysource import LogReplaySource
 from pykit.logtable import LogTable
@@ -55,9 +56,9 @@ class Logger:
         """
         if cls.running:
             if cls.isReplay():
-                inputs.fromLog(cls.entry.getSubTable(prefix))
+                inputs.fromLog(cls.entry, prefix)
             else:
-                inputs.toLog(cls.entry.getSubTable(prefix))
+                inputs.toLog(cls.entry, prefix)
 
     @classmethod
     def start(cls):
@@ -69,7 +70,6 @@ class Logger:
             if cls.isReplay():
                 cls.replaySource.start()
 
-
             if not cls.isReplay():
                 print("Logger in normal logging mode")
                 cls.outputTable = cls.entry.getSubTable("RealOutputs")
@@ -77,7 +77,9 @@ class Logger:
                 print("Logger in replay mode")
                 cls.outputTable = cls.entry.getSubTable("ReplayOutputs")
 
-            metadataTable = cls.entry.getSubTable("ReplayMetadata" if cls.isReplay() else "RealMetadata")
+            metadataTable = cls.entry.getSubTable(
+                "ReplayMetadata" if cls.isReplay() else "RealMetadata"
+            )
 
             for key, value in cls.metadata.items():
                 metadataTable.put(key, value)
@@ -120,10 +122,14 @@ class Logger:
 
             dsStart = RobotController.getFPGATime()
             if cls.isReplay():
-                LoggedDriverStation.loadFromTable(cls.entry.getSubTable("DriverStation"))
+                LoggedDriverStation.loadFromTable(
+                    cls.entry.getSubTable("DriverStation")
+                )
             dsEnd = RobotController.getFPGATime()
 
-            cls.recordOutput("Logger/EntryUpdateMS", (dsStart - entryUpdateStart) / 1000.0)
+            cls.recordOutput(
+                "Logger/EntryUpdateMS", (dsStart - entryUpdateStart) / 1000.0
+            )
             if cls.isReplay():
                 cls.recordOutput("Logger/DriverStationMS", (dsEnd - dsStart) / 1000.0)
 
@@ -136,21 +142,35 @@ class Logger:
                 LoggedDriverStation.saveToTable(cls.entry.getSubTable("DriverStation"))
             autoLogStart = RobotController.getFPGATime()
             # TODO: AutoLogOutput periodic check and update
+            AutoLogOutputManager.publish_all(cls.outputTable)
             radioLogStart = RobotController.getFPGATime()
             # TODO: RadioLogger
             radioLogEnd = RobotController.getFPGATime()
             if not cls.isReplay():
-                cls.recordOutput("Logger/DriverStationMS", (autoLogStart - dsStart) / 1000.0)
+                cls.recordOutput(
+                    "Logger/DriverStationMS", (autoLogStart - dsStart) / 1000.0
+                )
+                for logged_input in AutoLogInputManager.getInputs():
+                    logged_input.toLog(
+                        cls.entry.getSubTable("/"),
+                        "/" + logged_input.__class__.__name__,
+                    )
 
-            cls.recordOutput("Logger/AutoLogOutputMS", (radioLogStart - autoLogStart) / 1000.0)
-            cls.recordOutput("Logger/RadioLoggerMS", (radioLogEnd - radioLogStart) / 1000.0)
+            cls.recordOutput(
+                "Logger/AutoLogOutputMS", (radioLogStart - autoLogStart) / 1000.0
+            )
+            cls.recordOutput(
+                "Logger/RadioLoggerMS", (radioLogEnd - radioLogStart) / 1000.0
+            )
             cls.recordOutput("LoggedRobot/UserCodeMS", userCodeLength / 1000.0)
             periodicAfterLength = radioLogEnd - dsStart
-            cls.recordOutput("LoggedRobot/LogPeriodicMS", (periodicBeforeLength + periodicAfterLength) / 1000.0)
-            cls.recordOutput("LoggedRobot/FullCycleMS", (periodicBeforeLength + userCodeLength + periodicAfterLength) / 1000.0)
-
+            cls.recordOutput(
+                "LoggedRobot/LogPeriodicMS",
+                (periodicBeforeLength + periodicAfterLength) / 1000.0,
+            )
+            cls.recordOutput(
+                "LoggedRobot/FullCycleMS",
+                (periodicBeforeLength + userCodeLength + periodicAfterLength) / 1000.0,
+            )
 
             # TODO: write to logged systems
-
-
-

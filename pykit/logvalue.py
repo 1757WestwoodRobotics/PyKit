@@ -51,7 +51,6 @@ class LogValue:
         val.value = data
         return val
 
-
     class LoggableType(Enum):
         """Enum for the different types of loggable values."""
 

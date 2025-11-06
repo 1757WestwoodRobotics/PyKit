@@ -1,4 +1,5 @@
-from wpiutil.log import DataLogReader
+from wpilib import DriverStation
+from wpiutil.log import DataLogReader, DataLogRecord
 from pykit.logreplaysource import LogReplaySource
 from pykit.wpilog import wpilogconstants
 from pykit.logtable import LogTable
@@ -15,21 +16,24 @@ class WPILOGReader(LogReplaySource):
         :param filename: The path to the .wpilog file.
         """
         self.filename = filename
+
+    def start(self):
         self.reader = DataLogReader(self.filename)
         self.isValid = (
             self.reader.isValid()
             and self.reader.getExtraHeader() == wpilogconstants.extraHeader
         )
-        self.entries = {}
-        self.record_iterator = iter(self.reader.getRecords())
+        self.records = iter([])
 
         if self.isValid:
             # Create a new iterator for the initial entry scan
-            entry_scan_iterator = iter(self.reader.getRecords())
-            for record in entry_scan_iterator:
-                if record.isStart():
-                    data = record.getStartData()
-                    self.entries[data.entry] = data
+            self.records = iter(self.reader)
+            self.entryIds = {}
+            self.entryTypes = {}
+            self.timestamp = None
+
+        else:
+            print("[WPILogReader] not valid")
 
     def updateTable(self, table: LogTable) -> bool:
         """
@@ -41,32 +45,25 @@ class WPILOGReader(LogReplaySource):
         if not self.isValid:
             return False
 
-        try:
-            record = next(self.record_iterator)
-            table._timestamp = record.getTimestamp()
+        if self.timestamp is not None:
+            table.setTimestamp(self.timestamp)
 
-            if not record.isControl():
-                entry_id = record.getEntry()
-                if entry_id in self.entries:
-                    entry = self.entries[entry_id]
-                    value = None
-                    if entry.type == "boolean":
-                        value = record.getBoolean()
-                    elif entry.type == "double":
-                        value = record.getDouble()
-                    elif entry.type == "string" or entry.type == "json":
-                        value = record.getString()
-                    elif entry.type == "int" or entry.type == "int64":
-                        value = record.getInteger()
-                    elif entry.type == "float":
-                        value = record.getFloat()
-                    else:  # raw and others
-                        value = record.getData()
+        for record in self.records:
+            if record.isControl():
+                if record.isStart():
+                    startData = record.getStartData()
+                    self.entryIds[startData.entry] = startData.name
+                    self.entryTypes[startData.entry] = (
+                        LogValue.LoggableType.fromWPILOGType(startData.type),
+                    )
+                    pass
+            else:
+                entry = self.entryIds.get(record.getEntry())
+                if entry is not None:
+                    if entry == self.timestampKey:
+                        firsttimestamp = self.timestamp is None
+                        self.timestamp = record.getInteger()
+                        if firsttimestamp:
+                            table.setTimestamp(self.timestamp)
 
-                    if value is not None:
-                        table.put(entry.name, value)
-
-            return True
-        except StopIteration:
-            self.isValid = False
-            return False
+        return True

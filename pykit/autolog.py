@@ -1,13 +1,16 @@
 import typing
 import inspect
+import gc
 import dataclasses
 from pykit.logtable import LogTable
 from pykit.logvalue import LogValue
+
 
 class AutoLogClassOutputManager:
     """
     A manager class for handling automatic logging of dataclass fields.
     """
+
     logged_classes = []
 
     @classmethod
@@ -24,6 +27,7 @@ class AutoLogInputManager:
     """
     A manager class for handling automatic input loading of dataclass fields.
     """
+
     logged_classes = []
 
     @classmethod
@@ -35,27 +39,16 @@ class AutoLogInputManager:
         """
         cls.logged_classes.append(class_to_register)
 
-
-class AutoLogInputManager:
-    """
-    A manager class for handling automatic input loading of dataclass fields.
-    """
-    logged_classes = []
-
     @classmethod
-    def register_class(cls, class_to_register: typing.Any):
-        """
-        Registers a class for automatic input loading.
-
-        :param class_type: The class type to register.
-        """
-        cls.logged_classes.append(class_to_register)
+    def getInputs(cls) -> typing.List[typing.Any]:
+        return cls.logged_classes
 
 
 class AutoLogOutputManager:
     """
     A manager class for handling automatic logging of output members (fields/methods).
     """
+
     # Stores a dictionary where keys are class types and values are lists of
     # dictionaries, each representing a decorated member.
     # Each member dictionary contains:
@@ -63,7 +56,32 @@ class AutoLogOutputManager:
     #   'is_method': bool (True if it's a method, False if it's a field)
     #   'log_type': LogValue.LoggableType (the type to log as)
     #   'custom_type': str (optional custom type string)
-    logged_members: typing.Dict[typing.Type, typing.List[typing.Dict[str, typing.Any]]] = {}
+    logged_members: typing.Dict[
+        typing.Type, typing.List[typing.Dict[str, typing.Any]]
+    ] = {}
+
+    @classmethod
+    def publish_all(cls, table: LogTable, root_instance=None):
+        if root_instance is None:
+            root_instance = []
+            for clS in cls.logged_members.keys():
+                for instance in gc.get_referrers(
+                    clS
+                ):  # at runtime take all instances that exist of registered classes
+                    if instance.__class__ == clS:
+                        root_instance.append(instance)
+        for instance in root_instance:
+            cls.publish(instance, table)
+            if (
+                hasattr(
+                    instance, "_do_autolog"
+                )  # is the attempted class actually marked for autolog?
+                and getattr(instance, "_do_autolog")
+                and hasattr(instance, "__dict__")
+                and type(instance) is not staticmethod
+            ):
+                # be recursive, there are sub-members, but only on classes marked for autolog
+                cls.publish_all(table, instance.__dict__.values())
 
     @classmethod
     def register_member(
@@ -72,6 +90,7 @@ class AutoLogOutputManager:
         member_name: str,
         is_method: bool,
         log_type: LogValue.LoggableType,
+        key: str = "",
         custom_type: str = "",
     ):
         """
@@ -84,12 +103,13 @@ class AutoLogOutputManager:
                 "name": member_name,
                 "is_method": is_method,
                 "log_type": log_type,
+                "key": key,
                 "custom_type": custom_type,
             }
         )
 
     @classmethod
-    def publish(cls, instance: typing.Any, table: LogTable, prefix: str):
+    def publish(cls, instance: typing.Any, table: LogTable):
         """
         Publishes the values of all registered members of an instance to a LogTable.
         """
@@ -101,26 +121,28 @@ class AutoLogOutputManager:
                 log_type = member_info["log_type"]
                 custom_type = member_info["custom_type"]
 
+                key = member_info["key"] or member_name
+
                 value = None
                 if is_method:
                     # Assume methods are getters and take no arguments
                     value = getattr(instance, member_name)()
                 else:
                     value = getattr(instance, member_name)
-                
-                # Construct the full key for the log table
-                full_key = f"{prefix}/{member_name}" if prefix else member_name
 
                 # Put the value into the log table with the specified type
                 log_value = LogValue(value, custom_type)
-                # Override the inferred log_type if explicitly provided in the decorator
-                log_value.log_type = log_type
-                
-                if table.writeAllowed(full_key, log_value.log_type, log_value.custom_type):
-                    table.data[full_key] = log_value
+                if log_type != "":
+                    # Override the inferred log_type if explicitly provided in the decorator
+                    log_value.log_type = log_type
+
+                # if table.writeAllowed(
+                #     full_key, log_value.log_type, log_value.custom_type
+                # ):
+                table.putValue(key, log_value)
 
 
-def autolog_output(log_type: LogValue.LoggableType, custom_type: str = ""):
+def autolog_output(log_type: LogValue.LoggableType, key="", custom_type: str = ""):
     """
     A decorator for methods or fields in a class to automatically log their output.
     """
@@ -131,10 +153,12 @@ def autolog_output(log_type: LogValue.LoggableType, custom_type: str = ""):
         # We'll store a temporary attribute and process it in a class decorator.
         if inspect.isfunction(member):
             # It's a method
+            print(f"[AugoLogOutput] DEBUG: Setting up log for {key}")
             member._autolog_output_info = {
                 "is_method": True,
                 "log_type": log_type,
                 "custom_type": custom_type,
+                "key": key,
             }
         else:
             # It's a field (this case is harder to handle directly with a decorator
@@ -148,9 +172,10 @@ def autolog_output(log_type: LogValue.LoggableType, custom_type: str = ""):
             # decorator will pick up field annotations.
             # For now, let's make it work for methods and properties.
             member._autolog_output_info = {
-                "is_method": False, # This will be true for properties too
+                "is_method": False,  # This will be true for properties too
                 "log_type": log_type,
                 "custom_type": custom_type,
+                "key": key,
             }
         return member
 
@@ -171,8 +196,11 @@ def autologgable_output(cls):
                 name,
                 info["is_method"],
                 info["log_type"],
+                info["key"],
                 info["custom_type"],
             )
+
+    setattr(cls, "_do_autolog", True)
     return cls
 
 
@@ -247,9 +275,16 @@ def autolog(cls=None, /):
                     if new_value is not None:
                         setattr(self, name, new_value)
 
+        def registerAutologged(self) -> None:
+            print(f"[AutoLog] registering {self.name}")
+            AutoLogInputManager.register_class(self)
+
         setattr(clS, "toLog", toLog)
         setattr(clS, "fromLog", fromLog)
-        AutoLogInputManager.register_class(clS)
+        # https://docs.python.org/3/library/dataclasses.html#dataclasses.__post_init__
+        # https://docs.python.org/3/reference/expressions.html#private-name-mangling
+        setattr(cls, f"_{clS.__class__.__name__}__post_init__", registerAutologged)
+
         return clS
 
     if cls is None:
