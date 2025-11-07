@@ -131,7 +131,11 @@ class AutoLogOutputManager:
                     value = getattr(instance, member_name)
 
                 # Put the value into the log table with the specified type
-                if hasattr(value, "WPIStruct"):
+                if hasattr(value, "WPIStruct") or (
+                    hasattr(value, "__iter__")
+                    and len(value) > 0
+                    and hasattr(value[0], "WPIStruct")
+                ):
                     table.put(key, value)
                 else:
                     log_value = LogValue(value, custom_type)
@@ -145,7 +149,11 @@ class AutoLogOutputManager:
                     table.putValue(key, log_value)
 
 
-def autolog_output(key: str, log_type: typing.Optional[LogValue.LoggableType] = None, custom_type: str = ""):
+def autolog_output(
+    key: str,
+    log_type: typing.Optional[LogValue.LoggableType] = None,
+    custom_type: str = "",
+):
     """
     A decorator for methods or fields in a class to automatically log their output.
     """

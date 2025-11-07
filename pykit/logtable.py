@@ -69,7 +69,7 @@ class LogTable:
         self.data[key] = LogValue(schema.encode(), "structschema")
 
     def addStructSchema(self, struct: Any, seen: Set[str]):
-        typeString = "struct:" +wpistruct.getTypeName(struct.__class__)
+        typeString = "struct:" + wpistruct.getTypeName(struct.__class__)
         key = "/.schema/" + typeString
         if key in self.data.keys():
             return
@@ -78,9 +78,7 @@ class LogTable:
         schema = wpistruct.getSchema(struct.__class__)
         print(f"[STRUCT DEBUG] with schema {schema}")
         print(f"[STRUCT DEBUG] and bytes {schema.encode()}")
-        self.data[key] = LogValue(
-            schema.encode(), "structschema"
-        )
+        self.data[key] = LogValue(schema.encode(), "structschema")
 
         wpistruct.forEachNested(struct.__class__, self.addStructSchemaNest)
         seen.remove(typeString)
@@ -93,7 +91,21 @@ class LogTable:
         if hasattr(value, "WPIStruct"):
             # its a struct!
             self.addStructSchema(value, set())
-            log_value = LogValue(wpistruct.pack(value) ,"struct:" +wpistruct.getTypeName(value.__class__))
+            log_value = LogValue(
+                wpistruct.pack(value),
+                "struct:" + wpistruct.getTypeName(value.__class__),
+            )
+        elif (
+            hasattr(value, "__iter__")
+            and len(value) > 0
+            and hasattr(value[0], "WPIStruct")
+        ):
+            # structured array
+            self.addStructSchema(value[0], set())
+            log_value = LogValue(
+                wpistruct.packArray(value),
+                "struct:" + wpistruct.getTypeName(value[0].__class__) + "[]",
+            )
         else:
             log_value = LogValue(value, typeStr)
         self.putValue(key, log_value)
