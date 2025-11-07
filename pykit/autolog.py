@@ -135,7 +135,7 @@ class AutoLogOutputManager:
                     table.put(key, value)
                 else:
                     log_value = LogValue(value, custom_type)
-                    if log_type != "":
+                    if log_type != None:
                         # Override the inferred log_type if explicitly provided in the decorator
                         log_value.log_type = log_type
 
@@ -145,7 +145,7 @@ class AutoLogOutputManager:
                     table.putValue(key, log_value)
 
 
-def autolog_output(log_type: LogValue.LoggableType, key="", custom_type: str = ""):
+def autolog_output(key: str, log_type: typing.Optional[LogValue.LoggableType] = None, custom_type: str = ""):
     """
     A decorator for methods or fields in a class to automatically log their output.
     """
