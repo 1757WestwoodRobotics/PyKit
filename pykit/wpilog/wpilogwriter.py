@@ -182,7 +182,7 @@ class WPILOGWriter:
             if key not in self.entryIds:  # new field
                 entryId = self.log.start(
                     key,
-                    newValue.log_type.getWPILOGType(),
+                    newValue.getWPILOGType(),
                     wpilogconstants.entryMetadata,
                     table.getTimestamp(),
                 )

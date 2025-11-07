@@ -51,6 +51,12 @@ class LogValue:
         val.value = data
         return val
 
+    def getWPILOGType(self):
+        if self.custom_type != "":
+            print(self.custom_type)
+            return self.custom_type
+        return self.log_type.getWPILOGType()
+
     class LoggableType(Enum):
         """Enum for the different types of loggable values."""
 

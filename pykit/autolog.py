@@ -131,15 +131,18 @@ class AutoLogOutputManager:
                     value = getattr(instance, member_name)
 
                 # Put the value into the log table with the specified type
-                log_value = LogValue(value, custom_type)
-                if log_type != "":
-                    # Override the inferred log_type if explicitly provided in the decorator
-                    log_value.log_type = log_type
+                if hasattr(value, "WPIStruct"):
+                    table.put(key, value)
+                else:
+                    log_value = LogValue(value, custom_type)
+                    if log_type != "":
+                        # Override the inferred log_type if explicitly provided in the decorator
+                        log_value.log_type = log_type
 
-                # if table.writeAllowed(
-                #     full_key, log_value.log_type, log_value.custom_type
-                # ):
-                table.putValue(key, log_value)
+                    # if table.writeAllowed(
+                    #     full_key, log_value.log_type, log_value.custom_type
+                    # ):
+                    table.putValue(key, log_value)
 
 
 def autolog_output(log_type: LogValue.LoggableType, key="", custom_type: str = ""):

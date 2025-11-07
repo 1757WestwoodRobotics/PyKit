@@ -59,20 +59,27 @@ class LogTable:
         return True
 
     def addStructSchemaNest(self, structname: str, schema: str):
-        typeString = ":".join(structname.split(":")[1:])
+        typeString = structname
+        print(f"[STRUCT DEBUG] Nested {typeString} {structname} {schema}")
         key = "/.schema/" + typeString
         if key in self.data.keys():
             return
-        self.data[key] = LogValue(schema, "structschema")
+
+        print(f"[STRUCT DEBUG] Adding {typeString} at {key}")
+        self.data[key] = LogValue(schema.encode(), "structschema")
 
     def addStructSchema(self, struct: Any, seen: Set[str]):
-        typeString = wpistruct.getTypeName(struct.__class__)
+        typeString = "struct:" +wpistruct.getTypeName(struct.__class__)
         key = "/.schema/" + typeString
         if key in self.data.keys():
             return
+        print(f"[STRUCT DEBUG] Adding {typeString} at {key}")
         seen.add(typeString)
+        schema = wpistruct.getSchema(struct.__class__)
+        print(f"[STRUCT DEBUG] with schema {schema}")
+        print(f"[STRUCT DEBUG] and bytes {schema.encode()}")
         self.data[key] = LogValue(
-            wpistruct.getSchema(struct.__class__).encode(), "structschema"
+            schema.encode(), "structschema"
         )
 
         wpistruct.forEachNested(struct.__class__, self.addStructSchemaNest)
@@ -86,7 +93,7 @@ class LogTable:
         if hasattr(value, "WPIStruct"):
             # its a struct!
             self.addStructSchema(value, set())
-            log_value = LogValue(wpistruct.pack(value) ,wpistruct.getTypeName(value.__class__))
+            log_value = LogValue(wpistruct.pack(value) ,"struct:" +wpistruct.getTypeName(value.__class__))
         else:
             log_value = LogValue(value, typeStr)
         self.putValue(key, log_value)
