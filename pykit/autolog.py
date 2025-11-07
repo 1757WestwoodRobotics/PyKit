@@ -2,6 +2,7 @@ import typing
 import inspect
 import gc
 import dataclasses
+
 from pykit.logtable import LogTable
 from pykit.logvalue import LogValue
 
@@ -60,16 +61,22 @@ class AutoLogOutputManager:
         typing.Type, typing.List[typing.Dict[str, typing.Any]]
     ] = {}
 
+    root_cache = []
+
     @classmethod
     def publish_all(cls, table: LogTable, root_instance=None):
         if root_instance is None:
-            root_instance = []
-            for clS in cls.logged_members.keys():
-                for instance in gc.get_referrers(
-                    clS
-                ):  # at runtime take all instances that exist of registered classes
-                    if instance.__class__ == clS:
-                        root_instance.append(instance)
+            if cls.root_cache != []:
+                root_instance = cls.root_cache
+            else:
+                root_instance = []
+                for clS in cls.logged_members.keys():
+                    for instance in gc.get_referrers(
+                        clS
+                    ):  # at runtime take all instances that exist of registered classes
+                        if instance.__class__ == clS:
+                            root_instance.append(instance)
+                cls.root_cache = root_instance
         for instance in root_instance:
             cls.publish(instance, table)
             if (
