@@ -45,8 +45,10 @@ class LogValue:
             raise TypeError(f"Unsupported type for LogValue: {type(value)}")
 
     @staticmethod
-    def withType(log_type: "LogValue.LoggableType", data: Any) -> "LogValue":
-        val = LogValue(1)
+    def withType(
+        log_type: "LogValue.LoggableType", data: Any, typeStr: str = ""
+    ) -> "LogValue":
+        val = LogValue(1, typeStr)
         val.log_type = log_type
         val.value = data
         return val
@@ -115,15 +117,17 @@ class LogValue:
         @staticmethod
         def fromWPILOGType(typeStr: str) -> "LogValue.LoggableType":
             """Returns a LoggableType from a WPILOG type string."""
-            if typeStr in LogValue.LoggableType.wpilogTypes:
+            if typeStr in LogValue.LoggableType.wpilogTypes.value:
                 return LogValue.LoggableType(
-                    LogValue.LoggableType.wpilogTypes.index(typeStr) + 1
+                    LogValue.LoggableType.wpilogTypes.value.index(typeStr) + 1
                 )
+            return LogValue.LoggableType.Raw
 
         @staticmethod
         def fromNT4Type(typeStr: str) -> "LogValue.LoggableType":
             """Returns a LoggableType from an NT4 type string."""
-            if typeStr in LogValue.LoggableType.nt4Types:
+            if typeStr in LogValue.LoggableType.nt4Types.value:
                 return LogValue.LoggableType(
-                    LogValue.LoggableType.nt4Types.index(typeStr) + 1
+                    LogValue.LoggableType.nt4Types.value.index(typeStr) + 1
                 )
+            return LogValue.LoggableType.Raw

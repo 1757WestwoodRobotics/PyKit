@@ -114,5 +114,5 @@ class LoggedRobot(IterativeRobotBase):
             Logger.periodicAfterUser(
                 userCodeEnd - userCodeStart, userCodeStart - periodicBeforeStart
             )
-            if not Logger.isReplay():
-                self.writer.putTable(Logger.entry)
+            # if not Logger.isReplay():
+            self.writer.putTable(Logger.entry)

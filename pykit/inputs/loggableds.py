@@ -1,3 +1,4 @@
+from hal import AllianceStationID, MatchType
 from wpilib import DriverStation
 from wpilib.simulation import DriverStationSim
 
@@ -60,23 +61,28 @@ class LoggedDriverStation:
     @classmethod
     def loadFromTable(cls, table: LogTable):
         DriverStationSim.setAllianceStationId(
-            table.get("AllianceStation", DriverStation.Alliance.kRed1)
+            AllianceStationID(
+                table.get("AllianceStation", AllianceStationID.kRed1.value)
+            )
         )
         DriverStationSim.setEventName(table.get("EventName", ""))
         DriverStationSim.setGameSpecificMessage(table.get("GameSpecificMessage", ""))
         DriverStationSim.setMatchNumber(table.get("MatchNumber", 0))
         DriverStationSim.setReplayNumber(table.get("ReplayNumber", 0))
-        DriverStationSim.setMatchType(table.get("MatchType", 0))
+        DriverStationSim.setMatchType(
+            DriverStation.MatchType(table.get("MatchType", 0))
+        )
         DriverStationSim.setMatchTime(table.get("MatchTime", -1.0))
 
         DriverStationSim.setEnabled(table.get("Enabled", False))
         DriverStationSim.setAutonomous(table.get("Autonomous", False))
         DriverStationSim.setTest(table.get("Test", False))
-        DriverStationSim.setEStopped(table.get("EmergencyStop", False))
+        DriverStationSim.setEStop(table.get("EmergencyStop", False))
         DriverStationSim.setFmsAttached(table.get("FMSAttached", False))
         DriverStationSim.setDsAttached(table.get("DSAttached", False))
         for i in range(DriverStation.kJoystickPorts):
             joystickTable = table.getSubTable(f"Joystick{i}")
+            # print(joystickTable.getDoubleArray("AxesValues", []))
 
             buttonValues = joystickTable.get("ButtonValues", 0)
             DriverStationSim.setJoystickButtons(i, buttonValues)

@@ -102,7 +102,7 @@ class Logger:
     def getTimestamp(cls) -> int:
         """Returns the current timestamp for logging."""
         if cls.isReplay():
-            return cls.replaySource.getCurrentTimestamp()
+            return cls.entry.getTimestamp()
         else:
             return RobotController.getFPGATime()
 

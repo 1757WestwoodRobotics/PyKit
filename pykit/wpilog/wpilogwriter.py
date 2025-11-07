@@ -64,7 +64,7 @@ class WPILOGWriter:
         # DataLogManager.logNetworkTables(False)
         # DataLogManager.start(self.folder, self.filename)
         # self.log = DataLogManager.getLog()
-        self.log = DataLogWriter(fullPath)
+        self.log = DataLogWriter(fullPath, wpilogconstants.extraHeader)
 
         self.isOpen = True
         self.timestampId = self.log.start(
