@@ -60,12 +60,10 @@ class LogTable:
 
     def addStructSchemaNest(self, structname: str, schema: str):
         typeString = structname
-        print(f"[STRUCT DEBUG] Nested {typeString} {structname} {schema}")
         key = "/.schema/" + typeString
         if key in self.data.keys():
             return
 
-        print(f"[STRUCT DEBUG] Adding {typeString} at {key}")
         self.data[key] = LogValue(schema.encode(), "structschema")
 
     def addStructSchema(self, struct: Any, seen: Set[str]):
@@ -73,11 +71,8 @@ class LogTable:
         key = "/.schema/" + typeString
         if key in self.data.keys():
             return
-        print(f"[STRUCT DEBUG] Adding {typeString} at {key}")
         seen.add(typeString)
         schema = wpistruct.getSchema(struct.__class__)
-        print(f"[STRUCT DEBUG] with schema {schema}")
-        print(f"[STRUCT DEBUG] and bytes {schema.encode()}")
         self.data[key] = LogValue(schema.encode(), "structschema")
 
         wpistruct.forEachNested(struct.__class__, self.addStructSchemaNest)
