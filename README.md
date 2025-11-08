@@ -1,6 +1,6 @@
 # PyKit
 
-PyKit is a logging, telementary, and replay framework developed by [Team 1757](https://whsrobotics.org) for use on Python robots. PyKit enables replaying log files to re-simulate robot code based on real data.
+PyKit is a Pure-Python logging, telementary, and replay framework developed by [Team 1757](https://whsrobotics.org) for use on Python robots. PyKit enables replaying log files to re-simulate robot code based on real data.
 
 See also
 - [AdvantageKit](https://github.com/Mechanical-Advantage/AdvantageKit/) the inspiration project, in Java
