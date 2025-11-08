@@ -17,8 +17,10 @@ class NT4Publisher(LogDataReciever):
     timestampPublisher: IntegerPublisher
     publishers: dict[str, GenericPublisher] = {}
 
-    def __init__(self):
-        self.pykitTable = NetworkTableInstance.getDefault().getTable("/PyKit")
+    def __init__(self, actLikeAKit: bool = False):
+        self.pykitTable = NetworkTableInstance.getDefault().getTable(
+            "/AdvantageKit" if actLikeAKit else "/PyKit"
+        )
         self.timestampPublisher = self.pykitTable.getIntegerTopic(
             self.timestampKey[1:]
         ).publish()
