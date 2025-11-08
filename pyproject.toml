@@ -11,11 +11,10 @@ authors = [{ name = "Luke Maxwell", email = "luke@whsrobotics.org" }]
 license = "MIT"
 keywords = ["pykit", "frc", "robotics", "logging", "telemetry", "replay"]
 dependencies = [
-    "pyntcore >=2025.3.2.3",
-    "robotpy-wpimath >=2025.3.2.3",
-    "robotpy-commands-v2 >=2025.3.2.3",
-    "robotpy-wpiutil >=2025.3.2.3",
-    "robotpy-hal >=2025.3.2.3"
+    "pyntcore >=2025.3.2.2",
+    "robotpy-wpimath >=2025.3.2.2",
+    "robotpy-wpiutil >=2025.3.2.2",
+    "robotpy-hal >=2025.3.2.2"
 ]
 requires-python = ">=3.10"
 
