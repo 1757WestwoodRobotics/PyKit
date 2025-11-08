@@ -20,15 +20,6 @@ class LoggedRobot(IterativeRobotBase):
 
     default_period = 0.02  # seconds
 
-    class Mode(Enum):
-        """Enum for the different robot modes."""
-
-        none = auto()
-        disabled = auto()
-        autonomous = auto()
-        teleop = auto()
-        test = auto()
-
     def printOverrunMessage(self):
         """Prints a message when the main loop overruns."""
         print("Loop overrun detected!")
@@ -45,7 +36,6 @@ class LoggedRobot(IterativeRobotBase):
 
         self.notifier = hal.initializeNotifier()[0]
         self.watchdog = Watchdog(LoggedRobot.default_period, self.printOverrunMessage)
-        self.last_mode = LoggedRobot.Mode.none
         self.word = DSControlWord()
 
     def endCompetition(self) -> None:
@@ -93,4 +83,4 @@ class LoggedRobot(IterativeRobotBase):
 
             Logger.periodicAfterUser(
                 userCodeEnd - userCodeStart, userCodeStart - periodicBeforeStart
-
+            )
