@@ -5,20 +5,23 @@ from ntcore import (
     NetworkTableInstance,
 )
 
+from pykit.logdatareciever import LogDataReciever
 from pykit.logtable import LogTable
 from pykit.logvalue import LogValue
 
 
-class NT4Publisher:
+class NT4Publisher(LogDataReciever):
     pykitTable: NetworkTable
-    lastTable: LogTable
+    lastTable: LogTable = LogTable(0)
 
     timestampPublisher: IntegerPublisher
-    publishers: dict[str, GenericPublisher]
+    publishers: dict[str, GenericPublisher] = {}
 
     def __init__(self):
         self.pykitTable = NetworkTableInstance.getDefault().getTable("/PyKit")
-        self.timestampPublisher = self.pykitTable.getIntegerTopic("Timestamp").publish()
+        self.timestampPublisher = self.pykitTable.getIntegerTopic(
+            self.timestampKey[1:]
+        ).publish()
 
     def putTable(self, table: LogTable):
         self.timestampPublisher.set(table.getTimestamp(), table.getTimestamp())
@@ -42,42 +45,22 @@ class NT4Publisher:
                     publisher.setRaw(newValue.value, table.getTimestamp())
 
                 case LogValue.LoggableType.Boolean:
-                    publisher.setBoolean(
-                        newValue.value, table.getTimestamp()
-                    )
+                    publisher.setBoolean(newValue.value, table.getTimestamp())
                 case LogValue.LoggableType.Integer:
-                    publisher.setInteger(
-                        newValue.value, table.getTimestamp()
-                    )
+                    publisher.setInteger(newValue.value, table.getTimestamp())
                 case LogValue.LoggableType.Float:
-                    publisher.setFloat(
-                        newValue.value, table.getTimestamp()
-                    )
+                    publisher.setFloat(newValue.value, table.getTimestamp())
                 case LogValue.LoggableType.Double:
-                    publisher.setDouble(
-                        newValue.value, table.getTimestamp()
-                    )
+                    publisher.setDouble(newValue.value, table.getTimestamp())
                 case LogValue.LoggableType.String:
-                    publisher.setString(
-                        newValue.value, table.getTimestamp()
-                    )
+                    publisher.setString(newValue.value, table.getTimestamp())
                 case LogValue.LoggableType.BooleanArray:
-                    publisher.setBooleanArray(
-                        newValue.value, table.getTimestamp()
-                    )
+                    publisher.setBooleanArray(newValue.value, table.getTimestamp())
                 case LogValue.LoggableType.IntegerArray:
-                    publisher.setIntegerArray(
-                        newValue.value, table.getTimestamp()
-                    )
+                    publisher.setIntegerArray(newValue.value, table.getTimestamp())
                 case LogValue.LoggableType.FloatArray:
-                    publisher.setFloatArray(
-                        newValue.value, table.getTimestamp()
-                    )
+                    publisher.setFloatArray(newValue.value, table.getTimestamp())
                 case LogValue.LoggableType.DoubleArray:
-                    publisher.setDoubleArray(
-                        newValue.value, table.getTimestamp()
-                    )
+                    publisher.setDoubleArray(newValue.value, table.getTimestamp())
                 case LogValue.LoggableType.StringArray:
-                    publisher.setStringArray(
-                        newValue.value, table.getTimestamp()
-                    )
+                    publisher.setStringArray(newValue.value, table.getTimestamp())

@@ -7,12 +7,13 @@ from wpilib import RobotBase, RobotController
 from wpiutil import DataLogWriter
 from wpiutil.log import DataLog
 
+from pykit.logdatareciever import LogDataReciever
 from pykit.logtable import LogTable
 from pykit.logvalue import LogValue
 from pykit.wpilog import wpilogconstants
 
 
-class WPILOGWriter:
+class WPILOGWriter(LogDataReciever):
     """Writes a LogTable to a .wpilog file."""
 
     log: DataLogWriter
@@ -68,7 +69,7 @@ class WPILOGWriter:
 
         self.isOpen = True
         self.timestampId = self.log.start(
-            "/Timestamp",
+            self.timestampKey,
             LogValue.LoggableType.Integer.getWPILOGType(),
             wpilogconstants.entryMetadata,
             0,

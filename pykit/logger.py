@@ -3,6 +3,7 @@ from typing import Any, Optional
 from wpilib import RobotController
 from pykit.autolog import AutoLogInputManager, AutoLogOutputManager
 from pykit.inputs.loggableds import LoggedDriverStation
+from pykit.logdatareciever import LogDataReciever
 from pykit.logreplaysource import LogReplaySource
 from pykit.logtable import LogTable
 
@@ -17,6 +18,8 @@ class Logger:
     outputTable: LogTable = LogTable(0)
     metadata: dict[str, str] = {}
     checkConsole: bool = True
+
+    dataRecievers: list[LogDataReciever] = []
 
     @classmethod
     def setReplaySource(cls, replaySource: LogReplaySource):
@@ -61,6 +64,10 @@ class Logger:
                 inputs.toLog(cls.entry, prefix)
 
     @classmethod
+    def addDataReciever(cls, reciever: LogDataReciever):
+        cls.dataRecievers.append(reciever)
+
+    @classmethod
     def start(cls):
         if not cls.running:
             cls.running = True
@@ -84,8 +91,13 @@ class Logger:
             for key, value in cls.metadata.items():
                 metadataTable.put(key, value)
 
+
             RobotController.setTimeSource(cls.getTimestamp)
             cls.periodicBeforeUser()
+    @classmethod
+    def startReciever(cls):
+        for reciever in cls.dataRecievers:
+            reciever.start()
 
     @classmethod
     def end(cls):
@@ -97,6 +109,8 @@ class Logger:
                 cls.replaySource.end()
 
             RobotController.setTimeSource(RobotController.getFPGATime)
+            for reciever in cls.dataRecievers:
+                reciever.end()
 
     @classmethod
     def getTimestamp(cls) -> int:
@@ -173,4 +187,7 @@ class Logger:
                 (periodicBeforeLength + userCodeLength + periodicAfterLength) / 1000.0,
             )
 
-            # TODO: write to logged systems
+            for reciever in cls.dataRecievers:
+                cloneTable = LogTable.clone(cls.entry)
+                print(reciever, cloneTable, LogTable)
+                reciever.putTable(LogTable.clone(cls.entry))

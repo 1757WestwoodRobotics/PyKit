@@ -26,6 +26,16 @@ class LogTable:
         self.depth = 0
         self.data: dict[str, LogValue] = {}
 
+    @staticmethod
+    def clone(source: "LogTable"):
+        data: dict[str, LogValue] = {}
+        for item, value in source.data.items():
+            data[item] = value
+
+        newTable = LogTable(source._timestamp, source.prefix)
+        newTable.data = data
+        return newTable
+
     def getTimestamp(self) -> int:
         """Returns the timestamp of the log table."""
         return self._timestamp

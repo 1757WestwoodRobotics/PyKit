@@ -13,19 +13,6 @@ from wpilib import (
 )
 from pykit.logger import Logger
 from pykit.logtable import LogTable
-from pykit.wpilog.wpilogwriter import WPILOGWriter
-from pykit.wpilog.wpilogreader import WPILOGReader
-from pykit.autolog import AutoLogOutputManager, autolog
-import os
-from dataclasses import dataclass
-
-
-@autolog
-@dataclass
-class RobotIO:
-    """A dataclass for holding robot I/O data."""
-
-    voltage: float = 0.0
 
 
 class LoggedRobot(IterativeRobotBase):
@@ -61,15 +48,8 @@ class LoggedRobot(IterativeRobotBase):
         self.last_mode = LoggedRobot.Mode.none
         self.word = DSControlWord()
 
-        if not Logger.isReplay():
-            self.writer = WPILOGWriter()
-
-        self.io = RobotIO()
-
     def endCompetition(self) -> None:
         """Called at the end of the competition to clean up resources."""
-        if not Logger.isReplay() and hasattr(self, "writer"):
-            self.writer.end()
         hal.stopNotifier(self.notifier)
         hal.cleanNotifier(self.notifier)
 
@@ -90,7 +70,7 @@ class LoggedRobot(IterativeRobotBase):
         print("Robot startup complete!")
         hal.observeUserProgramStarting()
 
-        self.writer.start()
+        Logger.startReciever()
 
         while True:
             if self.useTiming:
@@ -113,6 +93,4 @@ class LoggedRobot(IterativeRobotBase):
 
             Logger.periodicAfterUser(
                 userCodeEnd - userCodeStart, userCodeStart - periodicBeforeStart
-            )
-            # if not Logger.isReplay():
-            self.writer.putTable(Logger.entry)
+
