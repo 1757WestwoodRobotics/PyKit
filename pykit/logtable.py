@@ -116,8 +116,19 @@ class LogTable:
         self.putValue(key, log_value)
 
     def putValue(self, key: str, log_value: LogValue):
+        if isinstance(log_value.value, list) and len(log_value.value) == 0:
+            # empty array is a weird case in dynamic type python, just force the type to match
+            currentVal = self.data.get(self.prefix + key)
+            if currentVal is not None:
+                log_value.log_type = currentVal.log_type
+                log_value.custom_type = currentVal.custom_type
+                if currentVal.custom_type.startswith("struct"):
+                    # struct logging is raw, empty array means we need a empty bytes buffer
+                    log_value.value = b""
         if self.writeAllowed(key, log_value.log_type, log_value.custom_type):
             self.data[self.prefix + key] = log_value
+        else:
+            print(f"Failed to insert {log_value.value}")
 
     def get(self, key: str, defaultValue: Any) -> Any:
         """Gets a value from the log table."""
