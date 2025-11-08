@@ -66,7 +66,6 @@ class WPILOGReader(LogReplaySource):
                     startData = record.getStartData()
                     self.entryIds[startData.entry] = startData.name
                     typeStr = startData.type
-                    print(typeStr, startData.entry, startData.name)
                     self.entryTypes[startData.entry] = (
                         LogValue.LoggableType.fromWPILOGType(typeStr)
                     )
@@ -95,8 +94,6 @@ class WPILOGReader(LogReplaySource):
                         entryType = self.entryTypes.get(record.getEntry())
                         if customType is None:
                             customType = ""
-                        else:
-                            print(customType, entry, entryType)
                         match entryType:
                             case LogValue.LoggableType.Raw:
                                 table.putValue(

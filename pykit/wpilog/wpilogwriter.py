@@ -1,6 +1,7 @@
 import os
 import random
 import datetime
+from tempfile import gettempdir
 
 from hal import MatchType
 from wpilib import RobotBase, RobotController
@@ -8,9 +9,12 @@ from wpiutil import DataLogWriter
 from wpiutil.log import DataLog
 
 from pykit.logdatareciever import LogDataReciever
+from pykit.logger import Logger
 from pykit.logtable import LogTable
 from pykit.logvalue import LogValue
 from pykit.wpilog import wpilogconstants
+
+ASCOPE_FILENAME = "ascope-log-path.txt"
 
 
 class WPILOGWriter(LogDataReciever):
@@ -86,6 +90,17 @@ class WPILOGWriter(LogDataReciever):
         print("[WPILogWriter] Shutting down")
         self.log.flush()
         self.log.stop()
+
+        if RobotBase.isSimulation() and Logger.isReplay():
+            # open ascope
+            fullpath = os.path.join(gettempdir(), ASCOPE_FILENAME)
+            if not os.path.exists(gettempdir()):
+                return
+            fullLogPath = os.path.abspath(os.path.join(self.folder, self.filename))
+            print(f"Sending {fullLogPath} to AScope")
+            with open(fullpath, "w") as f:
+                f.write(fullLogPath)
+
         # DataLogManager.stop()
 
     def putTable(self, table: LogTable):
