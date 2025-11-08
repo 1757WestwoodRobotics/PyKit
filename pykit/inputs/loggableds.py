@@ -12,9 +12,14 @@ class LoggedDriverStation:
     @classmethod
     def saveToTable(cls, table: LogTable):
         """Saves the current Driver Station data to the log table."""
-        if location := DriverStation.getLocation() == None:
-            location = 0
-        table.put("AllianceStation", int(location))
+        alliance = DriverStation.getAlliance()
+        location = DriverStation.getLocation()
+        station = (
+            0
+            if location == None or alliance == None
+            else (location + (3 if alliance == DriverStation.Alliance.kBlue else 0))
+        )
+        table.put("AllianceStation", station)
         table.put("EventName", DriverStation.getEventName())
         table.put("GameSpecificMessage", DriverStation.getGameSpecificMessage())
         table.put("MatchNumber", DriverStation.getMatchNumber())
