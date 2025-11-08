@@ -265,5 +265,5 @@ class WPILOGWriter(LogDataReciever):
                             entryId, newValue.value, table.getTimestamp()
                         )
 
-            self.log.flush()
-            self.lastTable = table
+        self.log.flush()
+        self.lastTable = table
