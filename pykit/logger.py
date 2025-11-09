@@ -6,6 +6,7 @@ from pykit.inputs.loggableds import LoggedDriverStation
 from pykit.logdatareciever import LogDataReciever
 from pykit.logreplaysource import LogReplaySource
 from pykit.logtable import LogTable
+from pykit.networktables.loggednetworkinput import LoggedNetworkInput
 
 
 class Logger:
@@ -20,6 +21,7 @@ class Logger:
     checkConsole: bool = True
 
     dataRecievers: list[LogDataReciever] = []
+    dashboardInputs: list[LoggedNetworkInput] = []
 
     @classmethod
     def setReplaySource(cls, replaySource: LogReplaySource):
@@ -68,6 +70,10 @@ class Logger:
         cls.dataRecievers.append(reciever)
 
     @classmethod
+    def registerDashboardInput(cls, dashboardInput: LoggedNetworkInput):
+        cls.dashboardInputs.append(dashboardInput)
+
+    @classmethod
     def start(cls):
         if not cls.running:
             cls.running = True
@@ -91,9 +97,9 @@ class Logger:
             for key, value in cls.metadata.items():
                 metadataTable.put(key, value)
 
-
             RobotController.setTimeSource(cls.getTimestamp)
             cls.periodicBeforeUser()
+
     @classmethod
     def startReciever(cls):
         for reciever in cls.dataRecievers:
@@ -139,13 +145,24 @@ class Logger:
                 LoggedDriverStation.loadFromTable(
                     cls.entry.getSubTable("DriverStation")
                 )
-            dsEnd = RobotController.getFPGATime()
+            dashboardInputStart = RobotController.getFPGATime()
+
+            for dashInput in cls.dashboardInputs:
+                dashInput.periodic()
+
+            dashboardInputEnd = RobotController.getFPGATime()
 
             cls.recordOutput(
                 "Logger/EntryUpdateMS", (dsStart - entryUpdateStart) / 1000.0
             )
             if cls.isReplay():
-                cls.recordOutput("Logger/DriverStationMS", (dsEnd - dsStart) / 1000.0)
+                cls.recordOutput(
+                    "Logger/DriverStationMS", (dashboardInputStart - dsStart) / 1000.0
+                )
+            cls.recordOutput(
+                "Logger/DashboardInputsMS",
+                (dashboardInputEnd - dashboardInputStart) / 1000.0,
+            )
 
     @classmethod
     def periodicAfterUser(cls, userCodeLength: int, periodicBeforeLength: int):
@@ -189,4 +206,4 @@ class Logger:
 
             for reciever in cls.dataRecievers:
                 cloneTable = LogTable.clone(cls.entry)
-                reciever.putTable(LogTable.clone(cls.entry))
+                reciever.putTable(cloneTable)
