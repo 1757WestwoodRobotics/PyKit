@@ -1,5 +1,10 @@
 import hal
-from wpilib import DSControlWord, IterativeRobotBase, RobotController, Watchdog
+from wpilib import (
+    DSControlWord,
+    IterativeRobotBase,
+    RobotController,
+    Watchdog,
+)
 
 from pykit.logger import Logger
 

@@ -172,6 +172,4 @@ class WPILOGReader(LogReplaySource):
                                     ),
                                 )
 
-                    else:
-                        print(record.getTimestamp(), self.timestamp)
         return keepLogging

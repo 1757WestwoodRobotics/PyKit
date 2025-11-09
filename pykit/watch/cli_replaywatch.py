@@ -52,14 +52,12 @@ class PyKitReplayWatch:
                 help=cmd_help,
             )
 
-
     def run(
         self,
         options: argparse.Namespace,  # pylint: disable=unused-argument
         project_path: pathlib.Path,  # pylint: disable=unused-argument
         robot_class: typing.Type[LoggedRobot],  # pylint: disable=unused-argument
     ):
-
 
         PyKitReplayWatch.do_update = False
 

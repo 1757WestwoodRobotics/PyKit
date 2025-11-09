@@ -84,7 +84,8 @@ class LoggedDriverStation:
         DriverStationSim.setTest(table.get("Test", False))
         DriverStationSim.setEStop(table.get("EmergencyStop", False))
         DriverStationSim.setFmsAttached(table.get("FMSAttached", False))
-        DriverStationSim.setDsAttached(table.get("DSAttached", False))
+        dsAttached = table.get("DSAttached", False)
+        DriverStationSim.setDsAttached(dsAttached)
         for i in range(DriverStation.kJoystickPorts):
             joystickTable = table.getSubTable(f"Joystick{i}")
             # print(joystickTable.getDoubleArray("AxesValues", []))
@@ -105,5 +106,5 @@ class LoggedDriverStation:
                 DriverStationSim.setJoystickAxis(i, j, axis_val)
                 DriverStationSim.setJoystickAxisType(i, j, axis_type)
 
-        if DriverStation.isDSAttached():
+        if dsAttached:
             DriverStationSim.notifyNewData()
