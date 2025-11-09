@@ -193,7 +193,7 @@ class WPILOGWriter(LogDataReciever):
         # encode fields
         for key, newValue in newMap.items():
             fieldType = newValue.log_type
-            appendData = True
+            appendData = False
 
             if key not in self.entryIds:  # new field
                 entryId = self.log.start(
