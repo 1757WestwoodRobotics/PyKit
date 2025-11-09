@@ -55,6 +55,7 @@ class LogTable:
         Prevents changing the type of a log entry.
         """
         if (currentVal := self.data.get(self.prefix + key)) is None:
+            print(f"Starting new log at {key}")
             return True
         if currentVal.log_type != logType:
             print(
@@ -125,6 +126,9 @@ class LogTable:
                 if currentVal.custom_type.startswith("struct"):
                     # struct logging is raw, empty array means we need a empty bytes buffer
                     log_value.value = b""
+            else:
+                # in the interest of not type mismatch, don't log
+                return
         if self.writeAllowed(key, log_value.log_type, log_value.custom_type):
             self.data[self.prefix + key] = log_value
         else:
