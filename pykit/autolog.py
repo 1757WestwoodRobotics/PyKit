@@ -3,6 +3,8 @@ import inspect
 import gc
 import dataclasses
 
+from wpiutil import wpistruct
+
 from pykit.logtable import LogTable
 from pykit.logvalue import LogValue
 
@@ -280,6 +282,15 @@ def autolog(cls=None, /):
                             new_value = table.getDoubleArray(field_prefix, value)
                         elif list_type is str:
                             new_value = table.getStringArray(field_prefix, value)
+                        elif hasattr(list_type, "WPIStruct"):
+                            new_value = wpistruct.unpackArray(
+                                list_type, table.getRaw(field_prefix, b"")
+                            )
+                            # is it struct?
+                        else:
+                            print(
+                                f"[AutoLog] Failed to read of type {field_type} with value {list_type}"
+                            )
                     else:
                         if field_type is bool:
                             new_value = table.getBoolean(field_prefix, value)
@@ -289,6 +300,13 @@ def autolog(cls=None, /):
                             new_value = table.getDouble(field_prefix, value)
                         elif field_type is str:
                             new_value = table.getString(field_prefix, value)
+                        elif hasattr(field_type, "WPIStruct"):
+                            new_value = wpistruct.unpack(
+                                field_type, table.getRaw(field_prefix, b"")
+                            )
+                            # is it struct?
+                        else:
+                            print(f"[AutoLog] Failed to read of type {field_type}")
 
                     if new_value is not None:
                         setattr(self, name, new_value)
