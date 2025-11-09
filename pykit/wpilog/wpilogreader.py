@@ -29,7 +29,7 @@ class WPILOGReader(LogReplaySource):
         self.reader = DataLogReader(self.filename)
         self.isValid = (
             self.reader.isValid()
-            and self.reader.getExtraHeader() == wpilogconstants.extraHeader
+            # and self.reader.getExtraHeader() == wpilogconstants.extraHeader
         )
         print(self.reader.isValid())
         print(self.reader.getExtraHeader())

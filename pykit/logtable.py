@@ -55,7 +55,6 @@ class LogTable:
         Prevents changing the type of a log entry.
         """
         if (currentVal := self.data.get(self.prefix + key)) is None:
-            print(f"Starting new log at {key}")
             return True
         if currentVal.log_type != logType:
             print(

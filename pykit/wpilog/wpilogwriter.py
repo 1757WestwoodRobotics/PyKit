@@ -4,7 +4,7 @@ import datetime
 from tempfile import gettempdir
 
 from hal import MatchType
-from wpilib import RobotBase, RobotController
+from wpilib import DataLogManager, RobotBase, RobotController
 from wpiutil import DataLogWriter
 from wpiutil.log import DataLog
 
@@ -20,7 +20,7 @@ ASCOPE_FILENAME = "ascope-log-path.txt"
 class WPILOGWriter(LogDataReciever):
     """Writes a LogTable to a .wpilog file."""
 
-    log: DataLogWriter
+    log: DataLog
     defaultPathRio: str = "/U/logs"
     defaultPathSim: str = "pyLogs"
 
@@ -66,10 +66,12 @@ class WPILOGWriter(LogDataReciever):
         if os.path.exists(fullPath):
             print("[WPILogWriter] File exists, overwriting")
             os.remove(fullPath)
-        # DataLogManager.logNetworkTables(False)
-        # DataLogManager.start(self.folder, self.filename)
-        # self.log = DataLogManager.getLog()
-        self.log = DataLogWriter(fullPath, wpilogconstants.extraHeader)
+        DataLogManager.stop()
+        DataLogManager.start(self.folder, self.filename)
+        print(DataLogManager.getLogDir())
+        DataLogManager.logNetworkTables(False)
+        self.log = DataLogManager.getLog()
+        # self.log = DataLogWriter(fullPath, wpilogconstants.extraHeader)
 
         self.isOpen = True
         self.timestampId = self.log.start(
@@ -170,9 +172,11 @@ class WPILOGWriter(LogDataReciever):
                         os.remove(fullPath)
 
                     # DataLogManager.logNetworkTables(False)
-                    # DataLogManager.start(self.folder, filename)
-                    self.log = DataLogWriter(fullPath)
-                    self.log._startFile()
+                    DataLogManager.stop()
+                    DataLogManager.start(self.folder, filename)
+                    self.log = DataLogManager.getLog()
+                    # self.log = DataLogWriter(fullPath)
+                    # self.log._startFile()
                     self.timestampId = self.log.start(
                         "/Timestamp",
                         LogValue.LoggableType.Integer.getWPILOGType(),

@@ -205,5 +205,4 @@ class Logger:
             )
 
             for reciever in cls.dataRecievers:
-                cloneTable = LogTable.clone(cls.entry)
-                reciever.putTable(cloneTable)
+                reciever.putTable(LogTable.clone(cls.entry))
