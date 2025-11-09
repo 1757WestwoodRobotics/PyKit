@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Generic, TypeVar
+from typing import Optional, Generic, TypeVar
 
 from wpilib import SendableChooser, SmartDashboard
 from pykit.logger import Logger

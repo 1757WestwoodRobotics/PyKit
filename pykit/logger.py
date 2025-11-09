@@ -123,8 +123,7 @@ class Logger:
         """Returns the current timestamp for logging."""
         if cls.isReplay():
             return cls.entry.getTimestamp()
-        else:
-            return RobotController.getFPGATime()
+        return RobotController.getFPGATime()
 
     @classmethod
     def periodicBeforeUser(cls):
@@ -138,7 +137,7 @@ class Logger:
                 if not cls.replaySource.updateTable(cls.entry):
                     print("End of replay reached")
                     cls.end()
-                    exit()
+                    raise SystemExit(0)
 
             dsStart = RobotController.getFPGATime()
             if cls.isReplay():

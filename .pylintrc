@@ -1,0 +1,45 @@
+[MAIN]
+# Use multiple processes to speed up Pylint
+jobs=0
+
+[MESSAGES CONTROL]
+# Disable checks that conflict with WPILib naming conventions or are too pedantic
+disable=
+    invalid-name,  # WPILib uses camelCase, not snake_case
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-positional-arguments,
+    too-many-instance-attributes,
+    too-many-public-methods,
+    too-many-branches,
+    too-many-statements,
+    too-many-locals,
+    fixme,  # TODO comments are intentional
+    protected-access,  # Sometimes necessary for internal APIs
+    attribute-defined-outside-init,  # Common pattern in this codebase
+    no-else-return,  # Style preference
+    import-error, # External deps may not be installed
+
+[FORMAT]
+# Maximum number of characters on a single line
+max-line-length=120
+
+[BASIC]
+# Allow both snake_case and camelCase for compatibility with WPILib
+# This is already handled by disabling invalid-name above
+
+[DESIGN]
+# Adjust thresholds
+max-args=7
+max-attributes=10
+max-bool-expr=5
+max-branches=15
+max-locals=15
+max-parents=7
+max-public-methods=25
+max-returns=6
+max-statements=60
+min-public-methods=1

@@ -1,9 +1,7 @@
-from functools import partial
-from typing import Any, Generic, Set, TypeVar
+from typing import Any, Set
 
 from wpiutil import wpistruct
 from pykit.logvalue import LogValue
-from wpiutil.wpistruct import StructDescriptor
 
 
 class LogTable:
@@ -231,12 +229,11 @@ class LogTable:
         """Returns all log values in the table."""
         if not subtableOnly:
             return self.data
-        else:
-            return {
-                key: value
-                for key, value in self.data.items()
-                if key.startswith(self.prefix)
-            }
+        return {
+            key: value
+            for key, value in self.data.items()
+            if key.startswith(self.prefix)
+        }
 
     def getSubTable(self, subtablePrefix: str) -> "LogTable":
         """

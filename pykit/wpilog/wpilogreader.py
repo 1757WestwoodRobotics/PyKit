@@ -1,8 +1,8 @@
 from typing import Any, Iterator
-from wpilib import DriverStation
-from wpiutil.log import DataLogReader, DataLogRecord
+
+from wpiutil.log import DataLogReader
+
 from pykit.logreplaysource import LogReplaySource
-from pykit.wpilog import wpilogconstants
 from pykit.logtable import LogTable
 from pykit.logvalue import LogValue
 
@@ -71,7 +71,6 @@ class WPILOGReader(LogReplaySource):
                     )
                     if typeStr.startswith("struct:") or typeStr == "structschema":
                         self.entryCustomTypes[startData.entry] = typeStr
-                    pass
             else:
                 entry = self.entryIds.get(record.getEntry())
                 if entry is not None:

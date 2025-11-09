@@ -1,18 +1,7 @@
-from enum import Enum, auto
 import hal
-from ntcore import NetworkTableInstance
-from wpilib import (
-    DSControlWord,
-    DriverStation,
-    IterativeRobotBase,
-    LiveWindow,
-    RobotController,
-    Notifier,
-    SmartDashboard,
-    Watchdog,
-)
+from wpilib import DSControlWord, IterativeRobotBase, RobotController, Watchdog
+
 from pykit.logger import Logger
-from pykit.logtable import LogTable
 
 
 class LoggedRobot(IterativeRobotBase):

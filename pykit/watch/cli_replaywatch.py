@@ -3,10 +3,9 @@ import argparse
 import importlib.metadata
 import logging
 import pathlib
-import sys
 import time
 import typing
-from watchdog.events import FileSystemEvent, FileSystemEventHandler
+from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 
@@ -16,14 +15,7 @@ from pykit.loggedrobot import LoggedRobot
 logger = logging.getLogger("pyfrc.sim")
 
 
-if sys.version_info < (3, 10):
-
-    def entry_points(group):
-        eps = importlib.metadata.entry_points()
-        return eps.get(group, [])
-
-else:
-    entry_points = importlib.metadata.entry_points
+entry_points = importlib.metadata.entry_points
 
 
 class PyKitReplayWatch:
@@ -63,9 +55,9 @@ class PyKitReplayWatch:
 
     def run(
         self,
-        options: argparse.Namespace,
-        project_path: pathlib.Path,
-        robot_class: typing.Type[LoggedRobot],
+        options: argparse.Namespace,  # pylint: disable=unused-argument
+        project_path: pathlib.Path,  # pylint: disable=unused-argument
+        robot_class: typing.Type[LoggedRobot],  # pylint: disable=unused-argument
     ):
 
 
@@ -74,7 +66,7 @@ class PyKitReplayWatch:
         class UpdateHandler(FileSystemEventHandler):
             def on_modified(self, event):
                 if not event.is_directory and event.src_path.endswith(".py"):
-                    print(f"[PyKit] Modification detected!")
+                    print("[PyKit] Modification detected!")
                     PyKitReplayWatch.do_update = True
 
         file_handler = UpdateHandler()
@@ -86,7 +78,8 @@ class PyKitReplayWatch:
         while True:
             PyKitReplayWatch.do_update = False
             print("[PyKit] Running replay...")
-            a = os.system("python -m robotpy sim --nogui") # this is hacky, a real solution is needed for resetting environment
+            # this is hacky, a real solution is needed for resetting environment
+            os.system("python -m robotpy sim --nogui")
             print("[PyKit] replay finished...")
             while not PyKitReplayWatch.doUpdate():
                 time.sleep(1)

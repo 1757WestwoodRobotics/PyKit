@@ -1,18 +1,22 @@
+
 import os
 import random
 import datetime
 from tempfile import gettempdir
 
+from typing import TYPE_CHECKING
+
 from hal import MatchType
 from wpilib import DataLogManager, RobotBase, RobotController
-from wpiutil import DataLogWriter
-from wpiutil.log import DataLog
-
 from pykit.logdatareciever import LogDataReciever
 from pykit.logger import Logger
 from pykit.logtable import LogTable
 from pykit.logvalue import LogValue
 from pykit.wpilog import wpilogconstants
+
+if TYPE_CHECKING:
+    from wpiutil.log import DataLog
+
 
 ASCOPE_FILENAME = "ascope-log-path.txt"
 
@@ -20,7 +24,7 @@ ASCOPE_FILENAME = "ascope-log-path.txt"
 class WPILOGWriter(LogDataReciever):
     """Writes a LogTable to a .wpilog file."""
 
-    log: DataLog
+    log: "DataLog"
     defaultPathRio: str = "/U/logs"
     defaultPathSim: str = "pyLogs"
 
@@ -42,7 +46,7 @@ class WPILOGWriter(LogDataReciever):
     def __init__(self, filename: str | None = None):
         path = self.defaultPathSim if RobotBase.isSimulation() else self.defaultPathRio
 
-        self.randomIdentifier = "%04X" % random.randint(0, 0xFFFF)
+        self.randomIdentifier = f"{random.randint(0, 0xFFFF):04X}"
 
         self.folder = path
         self.filename = (
@@ -100,7 +104,7 @@ class WPILOGWriter(LogDataReciever):
                 return
             fullLogPath = os.path.abspath(os.path.join(self.folder, self.filename))
             print(f"Sending {fullLogPath} to AScope")
-            with open(fullpath, "w") as f:
+            with open(fullpath, "w", encoding="utf-8") as f:
                 f.write(fullLogPath)
 
         # DataLogManager.stop()
@@ -217,7 +221,8 @@ class WPILOGWriter(LogDataReciever):
             # check if type changed
             elif newValue.log_type != self.entryTypes[key]:
                 print(
-                    f"[WPILOGWriter] Type of {key} changed from {self.entryTypes[key]} to {newValue.log_type}, skipping log"
+                    f"[WPILOGWriter] Type of {key} changed from "
+                    f"{self.entryTypes[key]} to {newValue.log_type}, skipping log"
                 )
                 continue
 

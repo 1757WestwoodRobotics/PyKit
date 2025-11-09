@@ -68,11 +68,11 @@ class AutoLogOutputManager:
     @classmethod
     def publish_all(cls, table: LogTable, root_instance=None):
         if root_instance is None:
-            if cls.root_cache != []:
+            if cls.root_cache:
                 root_instance = cls.root_cache
             else:
                 root_instance = []
-                for clS in cls.logged_members.keys():
+                for clS in cls.logged_members:
                     for instance in gc.get_referrers(
                         clS
                     ):  # at runtime take all instances that exist of registered classes
@@ -87,7 +87,7 @@ class AutoLogOutputManager:
                 )  # is the attempted class actually marked for autolog?
                 and getattr(instance, "_do_autolog")
                 and hasattr(instance, "__dict__")
-                and type(instance) is not staticmethod
+                and not isinstance(instance, staticmethod)
             ):
                 # be recursive, there are sub-members, but only on classes marked for autolog
                 cls.publish_all(table, instance.__dict__.values())
@@ -148,7 +148,7 @@ class AutoLogOutputManager:
                     table.put(key, value)
                 else:
                     log_value = LogValue(value, custom_type)
-                    if log_type != None:
+                    if log_type is not None:
                         # Override the inferred log_type if explicitly provided in the decorator
                         log_value.log_type = log_type
 

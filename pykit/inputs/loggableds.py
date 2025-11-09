@@ -1,4 +1,4 @@
-from hal import AllianceStationID, MatchType
+from hal import AllianceStationID
 from wpilib import DriverStation
 from wpilib.simulation import DriverStationSim
 
@@ -16,7 +16,7 @@ class LoggedDriverStation:
         location = DriverStation.getLocation()
         station = (
             0
-            if location == None or alliance == None
+            if location is None or alliance is None
             else (location + (3 if alliance == DriverStation.Alliance.kBlue else 0))
         )
         table.put("AllianceStation", station)
@@ -94,16 +94,16 @@ class LoggedDriverStation:
 
             povValues = joystickTable.get("POVs", [])
             DriverStationSim.setJoystickPOVCount(i, len(povValues))
-            for j in range(len(povValues)):
-                DriverStationSim.setJoystickPOV(i, j, povValues[j])
+            for j, pov in enumerate(povValues):
+                DriverStationSim.setJoystickPOV(i, j, pov)
 
             axisValues = joystickTable.get("AxesValues", [])
             axisTypes = joystickTable.get("AxisTypes", [])
 
             DriverStationSim.setJoystickAxisCount(i, len(axisValues))
-            for j in range(len(axisValues)):
-                DriverStationSim.setJoystickAxis(i, j, axisValues[j])
-                DriverStationSim.setJoystickAxisType(i, j, axisTypes[j])
+            for j, (axis_val, axis_type) in enumerate(zip(axisValues, axisTypes)):
+                DriverStationSim.setJoystickAxis(i, j, axis_val)
+                DriverStationSim.setJoystickAxisType(i, j, axis_type)
 
         if DriverStation.isDSAttached():
             DriverStationSim.notifyNewData()
