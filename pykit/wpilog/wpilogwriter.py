@@ -47,9 +47,11 @@ class WPILOGWriter(LogDataReciever):
 
         self.randomIdentifier = f"{random.randint(0, 0xFFFF):04X}"
 
-        self.folder = path
+        self.folder = os.path.abspath(
+            os.path.dirname(filename) if filename is not None else path
+        )
         self.filename = (
-            filename
+            os.path.basename(filename)
             if filename is not None
             else f"pykit_{self.randomIdentifier}.wpilog"
         )

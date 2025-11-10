@@ -3,6 +3,7 @@ import argparse
 import importlib.metadata
 import logging
 import pathlib
+from tempfile import gettempdir
 import time
 import typing
 from watchdog.events import FileSystemEventHandler
@@ -16,6 +17,8 @@ logger = logging.getLogger("pyfrc.sim")
 
 
 entry_points = importlib.metadata.entry_points
+
+AKIT_FILENAME = "akit-log-path.txt"
 
 
 class PyKitReplayWatch:
@@ -73,6 +76,22 @@ class PyKitReplayWatch:
 
         self.observer.start()
 
+        if "LOG_PATH" not in os.environ:
+            # see if we can pull from ascope's actively loaded log
+            readPath = os.path.join(gettempdir(), AKIT_FILENAME)
+            if not os.path.exists(readPath):
+                print("[PyKit] Cannot load log to replay!")
+                return
+            with open(
+                os.path.join(gettempdir(), AKIT_FILENAME), "r", encoding="utf-8"
+            ) as f:
+                readfilepath = f.readline()
+                os.environ["LOG_PATH"] = readfilepath
+                print(f"[PyKit] Logging from {readfilepath}")
+        else:
+            logpath = os.environ["LOG_PATH"]
+            print(f"[PyKit] Logging from {logpath}")
+
         while True:
             PyKitReplayWatch.do_update = False
             print("[PyKit] Running replay...")
@@ -81,31 +100,3 @@ class PyKitReplayWatch:
             print("[PyKit] replay finished...")
             while not PyKitReplayWatch.doUpdate():
                 time.sleep(1)
-        # # Some extensions (gui) changes the current directory
-        # cwd = os.getcwd()
-
-        # for name, module in self.simexts.items():
-        #     if getattr(options, name.replace("-", "_"), False):
-        #         try:
-        #             module.loadExtension()
-        #         except:
-        #             print(f"Error loading {name}!", file=sys.stderr)
-        #             raise
-
-        # os.chdir(cwd)
-
-        # # initialize physics, attach to the user robot class
-        # from pyfrc.physics.core import PhysicsInterface, PhysicsInitException
-
-        # try:
-        #     _, robot_class = PhysicsInterface._create_and_attach(
-        #         robot_class, project_path
-        #     )
-
-        #     # run the robot
-        #     retval = robot_class.main(robot_class)
-        #     print(retval)
-        #     return retval
-
-        # except PhysicsInitException:
-        #     return False
