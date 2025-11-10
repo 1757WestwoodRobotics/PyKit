@@ -3,12 +3,13 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pykit"
+name = "robotpy-pykit"
 version = "0.1.1"
 description = "A logging, telemetry, and replay framework for FRC robots running python"
 readme = "README.md"
 authors = [{ name = "Luke Maxwell", email = "luke@whsrobotics.org" }]
-license = "MIT"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 keywords = ["pykit", "frc", "robotics", "logging", "telemetry", "replay"]
 dependencies = [
     "pyntcore >=2025.3.2.2",
@@ -25,4 +26,4 @@ requires-python = ">=3.10"
 watch = "pykit.watch.cli_replaywatch:PyKitReplayWatch"
 
 [project.urls]
-Homepage = "https://github.com/1757WestwoodRobotics/pykit"
+Homepage = "https://github.com/1757WestwoodRobotics/PyKit"
