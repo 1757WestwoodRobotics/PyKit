@@ -1,4 +1,4 @@
-name: Pylint
+name: Formatting Check
 
 on:
   push:
@@ -14,6 +14,9 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
     - uses: actions/checkout@v4
+    - uses: psf/black@stable
+      with:
+        options: "--check"
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
