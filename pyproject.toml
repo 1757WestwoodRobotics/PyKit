@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "robotpy-pykit"
-version = "0.1.3b1"
+version = "0.1.3b2"
 description = "A logging, telemetry, and replay framework for FRC robots running python"
 readme = "README.md"
 authors = [{ name = "Luke Maxwell", email = "luke@whsrobotics.org" }]
@@ -17,13 +17,10 @@ dependencies = [
     "robotpy-wpiutil >=2025.3.2.2",
     "wpilib>=2025.3.2.2",
     "robotpy-hal >=2025.3.2.2",
-    "pyfrc >= 2025.1.0 ; platform_machine == 'x86_64'",
-    "watchdog>=6.0.0 ; platform_machine == 'x86_64'",
+    "pyfrc >= 2025.1.0",
 ]
 requires-python = ">=3.10"
 
-[project.entry-points.robotpy]
-watch = "pykit.watch.cli_replaywatch:PyKitReplayWatch"
 
 [project.urls]
 Homepage = "https://github.com/1757WestwoodRobotics/PyKit"
