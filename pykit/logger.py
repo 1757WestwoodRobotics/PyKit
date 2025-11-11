@@ -171,11 +171,8 @@ class Logger:
             if not cls.isReplay():
                 LoggedDriverStation.saveToTable(cls.entry.getSubTable("DriverStation"))
             autoLogStart = RobotController.getFPGATime()
-            # TODO: AutoLogOutput periodic check and update
             AutoLogOutputManager.publish_all(cls.outputTable)
-            radioLogStart = RobotController.getFPGATime()
-            # TODO: RadioLogger
-            radioLogEnd = RobotController.getFPGATime()
+            autoLogEnd = RobotController.getFPGATime()
             if not cls.isReplay():
                 cls.recordOutput(
                     "Logger/DriverStationMS", (autoLogStart - dsStart) / 1000.0
@@ -187,13 +184,10 @@ class Logger:
                     )
 
             cls.recordOutput(
-                "Logger/AutoLogOutputMS", (radioLogStart - autoLogStart) / 1000.0
-            )
-            cls.recordOutput(
-                "Logger/RadioLoggerMS", (radioLogEnd - radioLogStart) / 1000.0
+                "Logger/AutoLogOutputMS", (autoLogEnd - autoLogStart) / 1000.0
             )
             cls.recordOutput("LoggedRobot/UserCodeMS", userCodeLength / 1000.0)
-            periodicAfterLength = radioLogEnd - dsStart
+            periodicAfterLength = autoLogEnd - dsStart
             cls.recordOutput(
                 "LoggedRobot/LogPeriodicMS",
                 (periodicBeforeLength + periodicAfterLength) / 1000.0,

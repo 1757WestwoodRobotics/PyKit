@@ -44,8 +44,6 @@ class LoggedRobot(IterativeRobotBase):
         """
         self.robotInit()
 
-        # TODO: handle autolog outputs
-
         if self.isSimulation():
             self._simulationInit()
 
