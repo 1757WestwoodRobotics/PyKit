@@ -71,7 +71,8 @@ class WPILOGWriter(LogDataReciever):
         if os.path.exists(fullPath):
             print("[WPILogWriter] File exists, overwriting")
             os.remove(fullPath)
-        DataLogManager.stop()
+        if not RobotBase.isReal():
+            DataLogManager.stop()
         DataLogManager.start(self.folder, self.filename)
         print(DataLogManager.getLogDir())
         DataLogManager.logNetworkTables(False)
