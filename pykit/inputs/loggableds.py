@@ -58,7 +58,7 @@ class LoggedDriverStation:
                 axisTypes.append(DriverStation.getJoystickAxisType(i, j))
 
             joystickTable.putValue(
-                "AxesValues",
+                "AxisValues",
                 LogValue.withType(LogValue.LoggableType.DoubleArray, axisValues),
             )
             joystickTable.put("AxisTypes", axisTypes)
@@ -88,7 +88,7 @@ class LoggedDriverStation:
         DriverStationSim.setDsAttached(dsAttached)
         for i in range(DriverStation.kJoystickPorts):
             joystickTable = table.getSubTable(f"Joystick{i}")
-            # print(joystickTable.getDoubleArray("AxesValues", []))
+            # print(joystickTable.getDoubleArray("AxisValues", []))
 
             buttonValues = joystickTable.get("ButtonValues", 0)
             DriverStationSim.setJoystickButtons(i, buttonValues)
@@ -98,7 +98,7 @@ class LoggedDriverStation:
             for j, pov in enumerate(povValues):
                 DriverStationSim.setJoystickPOV(i, j, pov)
 
-            axisValues = joystickTable.get("AxesValues", [])
+            axisValues = joystickTable.get("AxisValues", [])
             axisTypes = joystickTable.get("AxisTypes", [])
 
             DriverStationSim.setJoystickAxisCount(i, len(axisValues))
