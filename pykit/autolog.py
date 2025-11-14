@@ -12,24 +12,6 @@ from pykit.logvalue import LogValue
 class _HasAutoLogInfo(typing.Protocol):
     _autolog_output_info: typing.Dict[str, typing.Any]
 
-
-class AutoLogClassOutputManager:
-    """
-    A manager class for handling automatic logging of dataclass fields.
-    """
-
-    logged_classes: typing.List[typing.Any] = []
-
-    @classmethod
-    def register_class(cls, class_to_register: typing.Any):
-        """
-        Registers a class for automatic logging.
-
-        :param class_type: The class type to register.
-        """
-        cls.logged_classes.append(class_to_register)
-
-
 class AutoLogInputManager:
     """
     A manager class for handling automatic input loading of dataclass fields.
