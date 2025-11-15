@@ -24,3 +24,15 @@ requires-python = ">=3.10"
 
 [project.urls]
 Homepage = "https://github.com/1757WestwoodRobotics/PyKit"
+
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+explicit_package_bases = true
+mypy_path = "."
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["untyped_package.*"]
+follow_untyped_imports = true

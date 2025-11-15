@@ -81,7 +81,9 @@ class Logger:
             print("Logger started")
 
             if cls.isReplay():
-                cls.replaySource.start()
+                rs = cls.replaySource
+                if rs is not None:
+                    rs.start()
 
             if not cls.isReplay():
                 print("Logger in normal logging mode")
@@ -112,7 +114,9 @@ class Logger:
             print("Logger ended")
 
             if cls.isReplay():
-                cls.replaySource.end()
+                rs = cls.replaySource
+                if rs is not None:
+                    rs.end()
 
             RobotController.setTimeSource(RobotController.getFPGATime)
             for reciever in cls.dataRecievers:
@@ -123,7 +127,8 @@ class Logger:
         """Returns the current timestamp for logging."""
         if cls.isReplay():
             return cls.entry.getTimestamp()
-        return RobotController.getFPGATime()
+        # RobotController.getFPGATime may be untyped; ensure int
+        return int(RobotController.getFPGATime())
 
     @classmethod
     def periodicBeforeUser(cls):
@@ -134,7 +139,8 @@ class Logger:
             if not cls.isReplay():
                 cls.entry.setTimestamp(RobotController.getFPGATime())
             else:
-                if not cls.replaySource.updateTable(cls.entry):
+                rs = cls.replaySource
+                if rs is None or not rs.updateTable(cls.entry):
                     print("End of replay reached")
                     cls.end()
                     raise SystemExit(0)

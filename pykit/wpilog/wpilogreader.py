@@ -24,6 +24,8 @@ class WPILOGReader(LogReplaySource):
         :param filename: The path to the .wpilog file.
         """
         self.filename = filename
+        # Predeclare records to satisfy typing before start() initializes it
+        self.records: Iterator[Any] = iter(())
 
     def start(self):
         self.reader = DataLogReader(self.filename)
@@ -33,7 +35,7 @@ class WPILOGReader(LogReplaySource):
         )
         print(self.reader.isValid())
         print(self.reader.getExtraHeader())
-        self.records = iter([])
+        self.records = iter(())
 
         if self.isValid:
             # Create a new iterator for the initial entry scan
@@ -41,7 +43,7 @@ class WPILOGReader(LogReplaySource):
             self.entryIds: dict[int, str] = {}
             self.entryTypes: dict[int, LogValue.LoggableType] = {}
             self.timestamp = None
-            self.entryCustomTypes = {}
+            self.entryCustomTypes: dict[int, str] = {}
 
         else:
             print("[WPILogReader] not valid")
