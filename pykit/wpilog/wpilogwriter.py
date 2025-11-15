@@ -42,7 +42,7 @@ class WPILOGWriter(LogDataReciever):
     entryTypes: dict[str, LogValue.LoggableType]
     entryUnits: dict[str, str]
 
-    def __init__(self, filename: str | None = None):
+    def __init__(self, filename: str | None = None) -> None:
         path = self.defaultPathSim if RobotBase.isSimulation() else self.defaultPathRio
 
         self.randomIdentifier = f"{random.randint(0, 0xFFFF):04X}"
@@ -57,7 +57,7 @@ class WPILOGWriter(LogDataReciever):
         )
         self.autoRename = False
 
-    def start(self):
+    def start(self) -> None:
         # Create folder if necessary
         if not os.path.exists(self.folder):
             os.makedirs(self.folder)
@@ -90,7 +90,7 @@ class WPILOGWriter(LogDataReciever):
         self.logDate = None
         self.logMatchText = f"pykit_{self.randomIdentifier}"
 
-    def end(self):
+    def end(self) -> None:
         print("[WPILogWriter] Shutting down")
         self.log.flush()
         self.log.stop()
@@ -107,7 +107,7 @@ class WPILOGWriter(LogDataReciever):
 
         # DataLogManager.stop()
 
-    def putTable(self, table: LogTable):
+    def putTable(self, table: LogTable) -> None:
         if not self.isOpen:
             return
         if self.autoRename:

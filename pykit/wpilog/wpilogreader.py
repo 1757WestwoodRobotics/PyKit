@@ -27,7 +27,7 @@ class WPILOGReader(LogReplaySource):
         # Predeclare records to satisfy typing before start() initializes it
         self.records: Iterator[Any] = iter(())
 
-    def start(self):
+    def start(self) -> None:
         self.reader = DataLogReader(self.filename)
         self.isValid = (
             self.reader.isValid()
@@ -80,6 +80,7 @@ class WPILOGReader(LogReplaySource):
                         firsttimestamp = self.timestamp is None
                         self.timestamp = record.getInteger()
                         if firsttimestamp:
+                            assert self.timestamp is not None
                             table.setTimestamp(self.timestamp)
                         else:
                             keepLogging = True  # we still have a timestamp, just need to wait until next iter
