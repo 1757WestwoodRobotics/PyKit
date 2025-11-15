@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "robotpy-pykit"
-version = "0.1.3b3"
+version = "0.1.3"
 description = "A logging, telemetry, and replay framework for FRC robots running python"
 readme = "README.md"
 authors = [{ name = "Luke Maxwell", email = "luke@whsrobotics.org" }]
