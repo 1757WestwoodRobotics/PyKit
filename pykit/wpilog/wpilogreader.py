@@ -1,13 +1,15 @@
-from typing import Any, Iterator
+from typing import Any, Iterator, TypeVar
 
-from wpiutil.log import DataLogReader
+from wpiutil.log import DataLogReader, DataLogRecord
 
 from pykit.logreplaysource import LogReplaySource
 from pykit.logtable import LogTable
 from pykit.logvalue import LogValue
 
+T = TypeVar("T")
 
-def safeNext(val: Iterator[Any]):
+
+def safeNext(val: Iterator[T]) -> None | T:
     try:
         return next(val)
     except StopIteration:
@@ -25,7 +27,7 @@ class WPILOGReader(LogReplaySource):
         """
         self.filename = filename
         # Predeclare records to satisfy typing before start() initializes it
-        self.records: Iterator[Any] = iter(())
+        self.records: Iterator[DataLogRecord] = iter(())
 
     def start(self) -> None:
         self.reader = DataLogReader(self.filename)
