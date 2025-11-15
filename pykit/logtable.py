@@ -1,4 +1,4 @@
-from typing import Any, Set
+from typing import Any, Set, cast
 
 from wpiutil import wpistruct
 from pykit.logvalue import LogValue
@@ -142,7 +142,7 @@ class LogTable:
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Raw:
-            return log_value.value
+            return cast(bytes, log_value.value)
         return defaultValue
 
     def getBoolean(self, key: str, defaultValue: bool) -> bool:
@@ -150,7 +150,7 @@ class LogTable:
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Boolean:
-            return log_value.value
+            return cast(bool, log_value.value)
         return defaultValue
 
     def getInteger(self, key: str, defaultValue: int) -> int:
@@ -158,7 +158,7 @@ class LogTable:
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Integer:
-            return log_value.value
+            return cast(int, log_value.value)
         return defaultValue
 
     def getFloat(self, key: str, defaultValue: float) -> float:
@@ -166,7 +166,7 @@ class LogTable:
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Float:
-            return log_value.value
+            return cast(float, log_value.value)
         return defaultValue
 
     def getDouble(self, key: str, defaultValue: float) -> float:
@@ -174,7 +174,7 @@ class LogTable:
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Double:
-            return log_value.value
+            return cast(float, log_value.value)
         return defaultValue
 
     def getString(self, key: str, defaultValue: str) -> str:
@@ -182,7 +182,7 @@ class LogTable:
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.String:
-            return log_value.value
+            return cast(str, log_value.value)
         return defaultValue
 
     def getBooleanArray(self, key: str, defaultValue: list[bool]) -> list[bool]:
@@ -190,7 +190,7 @@ class LogTable:
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.BooleanArray:
-            return log_value.value
+            return cast(list[bool], log_value.value)
         return defaultValue
 
     def getIntegerArray(self, key: str, defaultValue: list[int]) -> list[int]:
@@ -198,7 +198,7 @@ class LogTable:
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.IntegerArray:
-            return log_value.value
+            return cast(list[int], log_value.value)
         return defaultValue
 
     def getFloatArray(self, key: str, defaultValue: list[float]) -> list[float]:
@@ -206,7 +206,7 @@ class LogTable:
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.FloatArray:
-            return log_value.value
+            return cast(list[float], log_value.value)
         return defaultValue
 
     def getDoubleArray(self, key: str, defaultValue: list[float]) -> list[float]:
@@ -214,7 +214,7 @@ class LogTable:
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.DoubleArray:
-            return log_value.value
+            return cast(list[float], log_value.value)
         return defaultValue
 
     def getStringArray(self, key: str, defaultValue: list[str]) -> list[str]:
@@ -222,7 +222,7 @@ class LogTable:
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.StringArray:
-            return log_value.value
+            return cast(list[str], log_value.value)
         return defaultValue
 
     def getAll(self, subtableOnly: bool = False) -> dict[str, LogValue]:

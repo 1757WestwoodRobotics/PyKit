@@ -2,6 +2,35 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any
 
+# Mapping of LoggableType enum index to WPILOG/NT4 type strings
+_WPILOG_TYPES = [
+    "raw",
+    "boolean",
+    "int64",
+    "float",
+    "double",
+    "string",
+    "boolean[]",
+    "int64[]",
+    "float[]",
+    "double[]",
+    "string[]",
+]
+
+_NT4_TYPES = [
+    "raw",
+    "boolean",
+    "int",
+    "float",
+    "double",
+    "string",
+    "boolean[]",
+    "int[]",
+    "float[]",
+    "double[]",
+    "string[]",
+]
+
 
 @dataclass
 class LogValue:
@@ -53,12 +82,12 @@ class LogValue:
         val.value = data
         return val
 
-    def getWPILOGType(self):
+    def getWPILOGType(self) -> str:
         if self.custom_type != "":
             return self.custom_type
         return self.log_type.getWPILOGType()
 
-    def getNT4Type(self):
+    def getNT4Type(self) -> str:
         if self.custom_type != "":
             return self.custom_type
         return self.log_type.getNT4Type()
@@ -78,56 +107,24 @@ class LogValue:
         DoubleArray = auto()
         StringArray = auto()
 
-        wpilogTypes = [
-            "raw",
-            "boolean",
-            "int64",
-            "float",
-            "double",
-            "string",
-            "boolean[]",
-            "int64[]",
-            "float[]",
-            "double[]",
-            "string[]",
-        ]
-
-        nt4Types = [
-            "raw",
-            "boolean",
-            "int",
-            "float",
-            "double",
-            "string",
-            "boolean[]",
-            "int[]",
-            "float[]",
-            "double[]",
-            "string[]",
-        ]
-
         def getWPILOGType(self) -> str:
             """Returns the WPILOG type string for this type."""
-            return LogValue.LoggableType.wpilogTypes.value[self.value - 1]
+            return _WPILOG_TYPES[self.value - 1]
 
         def getNT4Type(self) -> str:
             """Returns the NT4 type string for this type."""
-            return LogValue.LoggableType.nt4Types.value[self.value - 1]
+            return _NT4_TYPES[self.value - 1]
 
         @staticmethod
         def fromWPILOGType(typeStr: str) -> "LogValue.LoggableType":
             """Returns a LoggableType from a WPILOG type string."""
-            if typeStr in LogValue.LoggableType.wpilogTypes.value:
-                return LogValue.LoggableType(
-                    LogValue.LoggableType.wpilogTypes.value.index(typeStr) + 1
-                )
+            if typeStr in _WPILOG_TYPES:
+                return LogValue.LoggableType(_WPILOG_TYPES.index(typeStr) + 1)
             return LogValue.LoggableType.Raw
 
         @staticmethod
         def fromNT4Type(typeStr: str) -> "LogValue.LoggableType":
             """Returns a LoggableType from an NT4 type string."""
-            if typeStr in LogValue.LoggableType.nt4Types.value:
-                return LogValue.LoggableType(
-                    LogValue.LoggableType.nt4Types.value.index(typeStr) + 1
-                )
+            if typeStr in _NT4_TYPES:
+                return LogValue.LoggableType(_NT4_TYPES.index(typeStr) + 1)
             return LogValue.LoggableType.Raw

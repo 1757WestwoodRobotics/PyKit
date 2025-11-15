@@ -9,12 +9,16 @@ from pykit.logtable import LogTable
 from pykit.logvalue import LogValue
 
 
+class _HasAutoLogInfo(typing.Protocol):
+    _autolog_output_info: typing.Dict[str, typing.Any]
+
+
 class AutoLogClassOutputManager:
     """
     A manager class for handling automatic logging of dataclass fields.
     """
 
-    logged_classes = []
+    logged_classes: typing.List[typing.Any] = []
 
     @classmethod
     def register_class(cls, class_to_register: typing.Any):
@@ -31,7 +35,7 @@ class AutoLogInputManager:
     A manager class for handling automatic input loading of dataclass fields.
     """
 
-    logged_classes = []
+    logged_classes: typing.List[typing.Any] = []
 
     @classmethod
     def register_class(cls, class_to_register: typing.Any):
@@ -63,7 +67,7 @@ class AutoLogOutputManager:
         typing.Type, typing.List[typing.Dict[str, typing.Any]]
     ] = {}
 
-    root_cache = []
+    root_cache: typing.List[typing.Any] = []
 
     @classmethod
     def publish_all(cls, table: LogTable, root_instance=None):
@@ -98,7 +102,7 @@ class AutoLogOutputManager:
         class_type: typing.Type,
         member_name: str,
         is_method: bool,
-        log_type: LogValue.LoggableType,
+        log_type: typing.Optional[LogValue.LoggableType],
         key: str = "",
         custom_type: str = "",
     ):
@@ -167,14 +171,14 @@ def autolog_output(
     A decorator for methods or fields in a class to automatically log their output.
     """
 
-    def decorator(member):
+    def decorator(member: typing.Any):
         # This part is tricky because Python decorators for methods/fields
         # don't directly give you the class at definition time.
         # We'll store a temporary attribute and process it in a class decorator.
         if inspect.isfunction(member):
             # It's a method
             print(f"[AugoLogOutput] DEBUG: Setting up log for {key}")
-            member._autolog_output_info = {
+            typing.cast(_HasAutoLogInfo, member)._autolog_output_info = {
                 "is_method": True,
                 "log_type": log_type,
                 "custom_type": custom_type,
@@ -191,7 +195,7 @@ def autolog_output(
             # For simplicity, let's focus on methods first, or assume a class
             # decorator will pick up field annotations.
             # For now, let's make it work for methods and properties.
-            member._autolog_output_info = {
+            typing.cast(_HasAutoLogInfo, member)._autolog_output_info = {
                 "is_method": False,  # This will be true for properties too
                 "log_type": log_type,
                 "custom_type": custom_type,
@@ -209,15 +213,17 @@ def autologgable_output(cls):
     """
     for name in dir(cls):
         member = getattr(cls, name)
-        if hasattr(member, "_autolog_output_info"):
-            info = member._autolog_output_info
+        info = getattr(member, "_autolog_output_info", None)
+        if isinstance(info, dict):
             AutoLogOutputManager.register_member(
                 cls,
                 name,
-                info["is_method"],
-                info["log_type"],
-                info["key"],
-                info["custom_type"],
+                bool(info.get("is_method", False)),
+                typing.cast(
+                    typing.Optional[LogValue.LoggableType], info.get("log_type")
+                ),
+                typing.cast(str, info.get("key", name)),
+                typing.cast(str, info.get("custom_type", "")),
             )
 
     setattr(cls, "_do_autolog", True)
@@ -269,7 +275,7 @@ def autolog(cls=None, /):
                     value.fromLog(table, field_prefix)
                 else:
                     field_type = resolved_hints[name]
-                    new_value = None
+                    new_value: typing.Any = None
 
                     origin = typing.get_origin(field_type)
                     if origin is list:
