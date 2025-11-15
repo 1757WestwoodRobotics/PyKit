@@ -41,6 +41,7 @@ class LoggedDashboardChooser(LoggedNetworkInput, Generic[T]):
         return self.options.get(self.selectedValue)
 
     def periodic(self):
+        # In normal mode, read from NetworkTables; in replay mode, read from log
         if not Logger.isReplay():
             self.selectedValue = self.sendableChooser.getSelected()
             if self.selectedValue is None:

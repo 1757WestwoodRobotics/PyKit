@@ -137,8 +137,10 @@ class Logger:
         if cls.running:
             entryUpdateStart = RobotController.getFPGATime()
             if not cls.isReplay():
+                # Normal mode: set current timestamp
                 cls.entry.setTimestamp(RobotController.getFPGATime())
             else:
+                # Replay mode: load next timestamped data from log
                 rs = cls.replaySource
                 if rs is None or not rs.updateTable(cls.entry):
                     print("End of replay reached")
@@ -146,12 +148,14 @@ class Logger:
                     raise SystemExit(0)
 
             dsStart = RobotController.getFPGATime()
+            # In replay mode, simulate driver station inputs from log
             if cls.isReplay():
                 LoggedDriverStation.loadFromTable(
                     cls.entry.getSubTable("DriverStation")
                 )
             dashboardInputStart = RobotController.getFPGATime()
 
+            # Update dashboard inputs (choosers, etc.)
             for dashInput in cls.dashboardInputs:
                 dashInput.periodic()
 
@@ -174,15 +178,18 @@ class Logger:
         """Called periodically after user code to finalize the log table."""
         if cls.running:
             dsStart = RobotController.getFPGATime()
+            # In normal mode, save driver station state to log
             if not cls.isReplay():
                 LoggedDriverStation.saveToTable(cls.entry.getSubTable("DriverStation"))
             autoLogStart = RobotController.getFPGATime()
+            # Publish all auto-logged outputs
             AutoLogOutputManager.publish_all(cls.outputTable)
             autoLogEnd = RobotController.getFPGATime()
             if not cls.isReplay():
                 cls.recordOutput(
                     "Logger/DriverStationMS", (autoLogStart - dsStart) / 1000.0
                 )
+                # Log all auto-logged inputs
                 for logged_input in AutoLogInputManager.getInputs():
                     logged_input.toLog(
                         cls.entry.getSubTable("/"),
@@ -203,5 +210,6 @@ class Logger:
                 (periodicBeforeLength + userCodeLength + periodicAfterLength) / 1000.0,
             )
 
+            # Send log table to all receivers (file writer, NetworkTables, etc.)
             for reciever in cls.dataRecievers:
                 reciever.putTable(LogTable.clone(cls.entry))

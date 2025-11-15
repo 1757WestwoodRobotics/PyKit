@@ -55,10 +55,11 @@ class LoggedRobot(IterativeRobotBase):
         Logger.startReciever()
 
         while True:
+            # Wait for next cycle using HAL notifier for precise timing
             if self.useTiming:
-                currentTime = RobotController.getFPGATime()  # microseconds
+                currentTime = RobotController.getFPGATime()
                 if self._nextCycleUs < currentTime:
-                    # loop overrun, immediate next cycle
+                    # Loop overrun detected - skip waiting and run immediately
                     self._nextCycleUs = currentTime
                 else:
                     hal.updateNotifierAlarm(self.notifier, int(self._nextCycleUs))
@@ -66,13 +67,16 @@ class LoggedRobot(IterativeRobotBase):
                         break
                 self._nextCycleUs += self._periodUs
 
+            # Run logger pre-user code (load inputs from log or sensors)
             periodicBeforeStart = RobotController.getFPGATime()
             Logger.periodicBeforeUser()
 
+            # Execute user periodic code and measure timing
             userCodeStart = RobotController.getFPGATime()
             self._loopFunc()
             userCodeEnd = RobotController.getFPGATime()
 
+            # Run logger post-user code (save outputs to log)
             Logger.periodicAfterUser(
                 userCodeEnd - userCodeStart, userCodeStart - periodicBeforeStart
             )

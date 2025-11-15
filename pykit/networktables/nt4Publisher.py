@@ -28,6 +28,7 @@ class NT4Publisher(LogDataReciever):
     def putTable(self, table: LogTable):
         self.timestampPublisher.set(table.getTimestamp(), table.getTimestamp())
 
+        # Compare with previous table to only publish changes
         newMap = table.getAll(False)
         oldMap = self.lastTable.getAll(False)
 
@@ -35,6 +36,7 @@ class NT4Publisher(LogDataReciever):
             if newValue == oldMap.get(key):
                 continue
             key = key[1:]
+            # Create publisher for new topics
             publisher = self.publishers.get(key)
             if publisher is None:
                 publisher = self.pykitTable.getTopic(key).genericPublish(

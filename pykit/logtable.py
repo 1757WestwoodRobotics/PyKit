@@ -75,6 +75,7 @@ class LogTable:
         self.data[key] = LogValue(schema.encode(), "structschema")
 
     def addStructSchema(self, struct: Any, seen: Set[str]):
+        # Add struct schema definition to log for replay compatibility
         typeString = "struct:" + wpistruct.getTypeName(struct.__class__)
         key = "/.schema/" + typeString
         if key in self.data.keys():
@@ -83,6 +84,7 @@ class LogTable:
         schema = wpistruct.getSchema(struct.__class__)
         self.data[key] = LogValue(schema.encode(), "structschema")
 
+        # Recursively add schemas for nested struct types
         wpistruct.forEachNested(struct.__class__, self.addStructSchemaNest)
         seen.remove(typeString)
 
@@ -92,7 +94,7 @@ class LogTable:
         The value is wrapped in a LogValue object.
         """
         if hasattr(value, "WPIStruct"):
-            # its a struct!
+            # Handle WPILib struct types - serialize and add schema
             self.addStructSchema(value, set())
             log_value = LogValue(
                 wpistruct.pack(value),
@@ -103,7 +105,7 @@ class LogTable:
             and len(value) > 0
             and hasattr(value[0], "WPIStruct")
         ):
-            # structured array
+            # Handle arrays of struct types
             self.addStructSchema(value[0], set())
             log_value = LogValue(
                 wpistruct.packArray(value),
@@ -114,17 +116,17 @@ class LogTable:
         self.putValue(key, log_value)
 
     def putValue(self, key: str, log_value: LogValue):
+        # Handle empty array edge case - match type to previous entry to avoid type mismatch
         if isinstance(log_value.value, list) and len(log_value.value) == 0:
-            # empty array is a weird case in dynamic type python, just force the type to match
             currentVal = self.data.get(self.prefix + key)
             if currentVal is not None:
                 log_value.log_type = currentVal.log_type
                 log_value.custom_type = currentVal.custom_type
                 if currentVal.custom_type.startswith("struct"):
-                    # struct logging is raw, empty array means we need a empty bytes buffer
+                    # Struct logging uses raw bytes, so empty array needs empty bytes
                     log_value.value = b""
             else:
-                # in the interest of not type mismatch, don't log
+                # Don't log if no previous entry to match type against
                 return
         if self.writeAllowed(key, log_value.log_type, log_value.custom_type):
             self.data[self.prefix + key] = log_value

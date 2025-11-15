@@ -12,6 +12,7 @@ from pykit.logvalue import LogValue
 class _HasAutoLogInfo(typing.Protocol):
     _autolog_output_info: typing.Dict[str, typing.Any]
 
+
 class AutoLogInputManager:
     """
     A manager class for handling automatic input loading of dataclass fields.
@@ -53,29 +54,29 @@ class AutoLogOutputManager:
 
     @classmethod
     def publish_all(cls, table: LogTable, root_instance=None):
+        # Build root instance list from cache or by scanning for registered class instances
         if root_instance is None:
             if cls.root_cache:
                 root_instance = cls.root_cache
             else:
                 root_instance = []
                 for clS in cls.logged_members:
-                    for instance in gc.get_referrers(
-                        clS
-                    ):  # at runtime take all instances that exist of registered classes
+                    # At runtime, find all instances that exist of registered classes
+                    for instance in gc.get_referrers(clS):
                         if instance.__class__ == clS:
                             root_instance.append(instance)
                 cls.root_cache = root_instance
+
+        # Publish each instance and recurse into nested autologged objects
         for instance in root_instance:
             cls.publish(instance, table)
             if (
-                hasattr(
-                    instance, "_do_autolog"
-                )  # is the attempted class actually marked for autolog?
+                hasattr(instance, "_do_autolog")
                 and getattr(instance, "_do_autolog")
                 and hasattr(instance, "__dict__")
                 and not isinstance(instance, staticmethod)
             ):
-                # be recursive, there are sub-members, but only on classes marked for autolog
+                # Recursively publish sub-members for classes marked for autolog
                 cls.publish_all(table, instance.__dict__.values())
 
     @classmethod
@@ -118,14 +119,14 @@ class AutoLogOutputManager:
 
                 key = member_info["key"] or member_name
 
+                # Get the value from the instance (call if method, access if field)
                 value = None
                 if is_method:
-                    # Assume methods are getters and take no arguments
                     value = getattr(instance, member_name)()
                 else:
                     value = getattr(instance, member_name)
 
-                # Put the value into the log table with the specified type
+                # Handle WPILib struct types specially
                 if hasattr(value, "WPIStruct") or (
                     hasattr(value, "__iter__")
                     and len(value) > 0
@@ -133,14 +134,10 @@ class AutoLogOutputManager:
                 ):
                     table.put(key, value)
                 else:
+                    # Wrap value in LogValue and override type if specified
                     log_value = LogValue(value, custom_type)
                     if log_type is not None:
-                        # Override the inferred log_type if explicitly provided in the decorator
                         log_value.log_type = log_type
-
-                    # if table.writeAllowed(
-                    #     full_key, log_value.log_type, log_value.custom_type
-                    # ):
                     table.putValue(key, log_value)
 
 
@@ -253,9 +250,11 @@ def autolog(cls=None, /):
                 field_prefix = f"{prefix}/{name}"
 
                 value = getattr(self, name)
+                # Recursively load nested autolog dataclasses
                 if hasattr(value, "fromLog"):
                     value.fromLog(table, field_prefix)
                 else:
+                    # Load primitive types and arrays from log table
                     field_type = resolved_hints[name]
                     new_value: typing.Any = None
 
@@ -271,10 +270,10 @@ def autolog(cls=None, /):
                         elif list_type is str:
                             new_value = table.getStringArray(field_prefix, value)
                         elif hasattr(list_type, "WPIStruct"):
+                            # Unpack WPILib struct array
                             new_value = wpistruct.unpackArray(
                                 list_type, table.getRaw(field_prefix, b"")
                             )
-                            # is it struct?
                         else:
                             print(
                                 f"[AutoLog] Failed to read of type {field_type} with value {list_type}"
@@ -289,10 +288,10 @@ def autolog(cls=None, /):
                         elif field_type is str:
                             new_value = table.getString(field_prefix, value)
                         elif hasattr(field_type, "WPIStruct"):
+                            # Unpack WPILib struct
                             new_value = wpistruct.unpack(
                                 field_type, table.getRaw(field_prefix, b"")
                             )
-                            # is it struct?
                         else:
                             print(f"[AutoLog] Failed to read of type {field_type}")
 

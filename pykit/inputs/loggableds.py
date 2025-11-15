@@ -14,6 +14,7 @@ class LoggedDriverStation:
         """Saves the current Driver Station data to the log table."""
         alliance = DriverStation.getAlliance()
         location = DriverStation.getLocation()
+        # Encode alliance station as single integer (0=none, 1-3=red, 4-6=blue)
         station = (
             0
             if location is None or alliance is None
@@ -34,6 +35,7 @@ class LoggedDriverStation:
         table.put("FMSAttached", DriverStation.isFMSAttached())
         table.put("DSAttached", DriverStation.isDSAttached())
 
+        # Log all joystick data for each port
         for i in range(DriverStation.kJoystickPorts):
             joystickTable = table.getSubTable(f"Joystick{i}")
             joystickTable.put("Name", DriverStation.getJoystickName(i).strip())
@@ -42,6 +44,7 @@ class LoggedDriverStation:
             joystickTable.put("ButtonCount", DriverStation.getStickButtonCount(i))
             joystickTable.put("ButtonValues", DriverStation.getStickButtons(i))
 
+            # Log POV (D-pad) values
             povCount = DriverStation.getStickPOVCount(i)
             povValues = []
             for j in range(povCount):
@@ -50,6 +53,7 @@ class LoggedDriverStation:
                 "POVs", LogValue.withType(LogValue.LoggableType.IntegerArray, povValues)
             )
 
+            # Log axis values and types
             axisCount = DriverStation.getStickAxisCount(i)
             axisValues = []
             axisTypes = []
@@ -86,18 +90,21 @@ class LoggedDriverStation:
         DriverStationSim.setFmsAttached(table.get("FMSAttached", False))
         dsAttached = table.get("DSAttached", False)
         DriverStationSim.setDsAttached(dsAttached)
+
+        # Restore joystick data for each port
         for i in range(DriverStation.kJoystickPorts):
             joystickTable = table.getSubTable(f"Joystick{i}")
-            # print(joystickTable.getDoubleArray("AxisValues", []))
 
             buttonValues = joystickTable.get("ButtonValues", 0)
             DriverStationSim.setJoystickButtons(i, buttonValues)
 
+            # Restore POV values
             povValues = joystickTable.get("POVs", [])
             DriverStationSim.setJoystickPOVCount(i, len(povValues))
             for j, pov in enumerate(povValues):
                 DriverStationSim.setJoystickPOV(i, j, pov)
 
+            # Restore axis values and types
             axisValues = joystickTable.get("AxisValues", [])
             axisTypes = joystickTable.get("AxisTypes", [])
 
@@ -106,5 +113,6 @@ class LoggedDriverStation:
                 DriverStationSim.setJoystickAxis(i, j, axis_val)
                 DriverStationSim.setJoystickAxisType(i, j, axis_type)
 
+        # Notify driver station of updated data
         if dsAttached:
             DriverStationSim.notifyNewData()

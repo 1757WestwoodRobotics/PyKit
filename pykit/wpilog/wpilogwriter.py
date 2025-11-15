@@ -58,16 +58,13 @@ class WPILOGWriter(LogDataReciever):
         self.autoRename = False
 
     def start(self):
-        # create folder if necessary
+        # Create folder if necessary
         if not os.path.exists(self.folder):
             os.makedirs(self.folder)
 
-        # delete log if it exists
-
-        # create a new log
+        # Initialize the WPILOG file
         fullPath = os.path.join(self.folder, self.filename)
         print(f"[WPILogWriter] Creating WPILOG file at {fullPath}")
-        # DataLogManager.stop()  # ensure its fully stopped
         if os.path.exists(fullPath):
             print("[WPILogWriter] File exists, overwriting")
             os.remove(fullPath)
@@ -77,7 +74,6 @@ class WPILOGWriter(LogDataReciever):
         print(DataLogManager.getLogDir())
         DataLogManager.logNetworkTables(False)
         self.log = DataLogManager.getLog()
-        # self.log = DataLogWriter(fullPath, wpilogconstants.extraHeader)
 
         self.isOpen = True
         self.timestampId = self.log.start(
@@ -115,7 +111,7 @@ class WPILOGWriter(LogDataReciever):
         if not self.isOpen:
             return
         if self.autoRename:
-            # rename log if necessary
+            # Auto-rename log file based on timestamp and match info
             if self.logDate is None:
                 if (
                     table.get("DriverStation/DSAttached", False)
@@ -141,6 +137,7 @@ class WPILOGWriter(LogDataReciever):
                     case _:
                         matchType = MatchType.none
 
+                # Build match text prefix (p/q/e + match number)
                 if self.logMatchText == "" and matchType != MatchType.none:
                     match matchType:
                         case MatchType.practice:
@@ -153,7 +150,7 @@ class WPILOGWriter(LogDataReciever):
                             self.logMatchText = "u"
                     self.logMatchText += str(table.get("DriverStation/MatchNumber", 0))
 
-                # update filename
+                # Generate new filename with timestamp, event, and match info
                 filename = "pykit_"
                 if self.logDate is not None:
                     filename += self.logDate.strftime("%Y%m%d_%H%M%S")
@@ -168,21 +165,17 @@ class WPILOGWriter(LogDataReciever):
                     filename += f"_{self.logMatchText}"
                 filename += ".wpilog"
                 if self.filename != filename:
+                    # Rename log file by closing current and opening new
                     print(f"[WPILogWriter] Renaming log to {filename}")
-                    # DataLogManager.stop()
-                    # self.log.stop()
                     self.log.stop()
                     fullPath = os.path.join(self.folder, self.filename)
                     if os.path.exists(fullPath):
                         print(f"[WPILogWriter] Old file removed ({self.filename})")
                         os.remove(fullPath)
 
-                    # DataLogManager.logNetworkTables(False)
                     DataLogManager.stop()
                     DataLogManager.start(self.folder, filename)
                     self.log = DataLogManager.getLog()
-                    # self.log = DataLogWriter(fullPath)
-                    # self.log._startFile()
                     self.timestampId = self.log.start(
                         "/Timestamp",
                         LogValue.LoggableType.Integer.getWPILOGType(),
@@ -191,21 +184,23 @@ class WPILOGWriter(LogDataReciever):
                     )
                     self.filename = filename
 
-        # write timestamp
+        # Write timestamp entry
         self.log.appendInteger(
             self.timestampId, table.getTimestamp(), table.getTimestamp()
         )
 
-        # get new and old data
+        # Get current and previous data for change detection
         newMap = table.getAll()
         oldMap = self.lastTable.getAll()
 
-        # encode fields
+        # Write changed entries to log
         for key, newValue in newMap.items():
             fieldType = newValue.log_type
             appendData = False
 
-            if key not in self.entryIds:  # new field
+            # Register new field or detect changes
+            if key not in self.entryIds:
+                # New field - create entry in log
                 entryId = self.log.start(
                     key,
                     newValue.getWPILOGType(),
@@ -217,10 +212,11 @@ class WPILOGWriter(LogDataReciever):
                 self.entryUnits[key] = ""
 
                 appendData = True
-            elif newValue != oldMap.get(key):  # existing field changed
+            elif newValue != oldMap.get(key):
+                # Existing field changed - log new value
                 appendData = True
 
-            # check if type changed
+            # Detect and warn about type changes
             elif newValue.log_type != self.entryTypes[key]:
                 print(
                     f"[WPILOGWriter] Type of {key} changed from "

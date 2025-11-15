@@ -43,10 +43,11 @@ class LogValue:
     def __init__(self, value: Any, typeStr: str = "") -> None:
         """
         Constructor for LogValue.
-        Infers the loggable type from the value.
+        Infers the loggable type from the value's Python type.
         """
         self.value = value
         self.custom_type = typeStr
+        # Type inference - bool must be checked before int since bool is subclass of int
         if isinstance(value, bool):
             self.log_type = LogValue.LoggableType.Boolean
         elif isinstance(value, int):
