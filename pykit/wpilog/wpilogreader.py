@@ -1,4 +1,4 @@
-from typing import Any, Iterator, TypeVar
+from typing import Iterator, TypeVar
 
 from wpiutil.log import DataLogReader, DataLogRecord
 

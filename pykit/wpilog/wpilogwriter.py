@@ -70,7 +70,11 @@ class WPILOGWriter(LogDataReciever):
             os.remove(fullPath)
         if not RobotBase.isReal():
             DataLogManager.stop()
-        DataLogManager.start(self.folder, self.filename)
+        try:
+            DataLogManager.start(self.folder, self.filename)
+        except PermissionError as e:
+            print(f"Failed to open WPILOG file! ({e})")
+            return
         print(DataLogManager.getLogDir())
         DataLogManager.logNetworkTables(False)
         self.log = DataLogManager.getLog()
