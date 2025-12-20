@@ -43,3 +43,7 @@ max-public-methods=25
 max-returns=6
 max-statements=60
 min-public-methods=1
+
+[SIMILARITIES]
+# Ignore template projects for similarity checks
+ignore-paths=template_projects/ 

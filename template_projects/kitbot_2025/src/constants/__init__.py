@@ -17,3 +17,6 @@ kSimMode = (
     else RobotModes.SIMULATION
 )
 kRobotMode = RobotModes.REAL if RobotBase.isReal() else kSimMode
+
+kRobotFrequency = 50
+kRobotPeriod = 1.0 / kRobotFrequency
