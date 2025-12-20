@@ -1,0 +1,27 @@
+[project]
+name = "pykit_skeleton"
+version = "0.1.0"
+description = "An FRC Robot"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "wpilib>=2025.3.2.2",
+    "robotpy-pykit==0.1.4",
+    "robotpy-pykit-watch==0.1.0",
+    "robotpy-halsim-gui>=2025.3.2.2",
+    "robotpy>=2025.3.2.2",
+    "robotpy-cli>=2024.0.0",
+    "black>=25.9.8",
+    "pylint>=4.0.2",
+]
+
+[tool.robotpy]
+
+# Version of robotpy this project depends on
+robotpy_version = "2025.3.2.2"
+robotpy_extras = [
+  "sim"
+]
+requires = [
+  "robotpy-pykit==0.1.4",
+]
