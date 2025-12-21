@@ -1,9 +1,10 @@
 name: "Publish"
 
 on:
-  push:
+  workflow_dispatch:
+  release:
+    types: [published]
     tags:
-      # Publish on any tag starting with a `v`, e.g., v0.1.0
       - v*
 
 jobs:
@@ -11,9 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-    permissions:
-      id-token: write
-      contents: read
+    permissions: write-all
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -23,5 +22,36 @@ jobs:
         run: uv python install 3.13
       - name: Build
         run: uv build
+      - name: "Release: Get release info"
+        id: get_release_info
+        if: github.event_name == 'release'
+        uses: bruceadams/get-release@v1.2.3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Generate Template Projects
+        working-directory: template_projects
+        run: |
+          chmod +x package_templates.sh
+          ./package_templates.sh
+      - name: Upload template project (kitbot_2025)
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: template_projects/kitbot_2025.zip
+          asset_name: PyKit_KitBot2025Template.zip
+          asset_content_type: application/zip
+      - name: Upload template project (skeleton)
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: template_projects/skeleton.zip
+          asset_name: PyKit_SkeletonTemplate.zip
+          asset_content_type: application/zip
       - name: Publish
         run: uv publish

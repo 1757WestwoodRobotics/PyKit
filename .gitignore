@@ -192,3 +192,6 @@ Pipfile.lock
 pyrightconfig.json
 
 .DS_Store
+
+# Generated templates
+/template_projects/*.zip
