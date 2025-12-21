@@ -14,9 +14,7 @@ class _HasAutoLogInfo(typing.Protocol):
 
 
 class AutoLogInputManager:
-    """
-    A manager class for handling automatic input loading of dataclass fields.
-    """
+    """A manager class for handling automatic input loading of dataclass fields."""
 
     logged_classes: typing.List[typing.Any] = []
 
@@ -25,19 +23,22 @@ class AutoLogInputManager:
         """
         Registers a class for automatic input loading.
 
-        :param class_type: The class type to register.
+        :param class_to_register: The class type to register.
         """
         cls.logged_classes.append(class_to_register)
 
     @classmethod
     def getInputs(cls) -> typing.List[typing.Any]:
+        """
+        Returns the list of registered classes for input loading.
+
+        :return: A list of registered classes.
+        """
         return cls.logged_classes
 
 
 class AutoLogOutputManager:
-    """
-    A manager class for handling automatic logging of output members (fields/methods).
-    """
+    """A manager class for handling automatic logging of output members (fields/methods)."""
 
     # Stores a dictionary where keys are class types and values are lists of
     # dictionaries, each representing a decorated member.
@@ -54,6 +55,17 @@ class AutoLogOutputManager:
 
     @classmethod
     def publish_all(cls, table: LogTable, root_instance=None):
+        """
+        Publishes all registered members of all registered class instances.
+
+        This method scans for all instances of classes registered with `autologgable_output`
+        and publishes their decorated members to the provided LogTable. It also handles
+        caching of root instances to avoid redundant garbage collection scans.
+
+        :param table: The LogTable to publish data to.
+        :param root_instance: An optional list of root instances to start publishing from.
+                              If None, it scans for all instances of registered classes.
+        """
         # Build root instance list from cache or by scanning for registered class instances
         if root_instance is None:
             if cls.root_cache:
@@ -91,6 +103,13 @@ class AutoLogOutputManager:
     ):
         """
         Registers a member (field or method) of a class for automatic output logging.
+
+        :param class_type: The class to which the member belongs.
+        :param member_name: The name of the member (field or method).
+        :param is_method: True if the member is a method, False otherwise.
+        :param log_type: The `LogValue.LoggableType` to log the member as.
+        :param key: The key to use for logging. Defaults to the member name.
+        :param custom_type: A custom type string for the log entry.
         """
         if class_type not in cls.logged_members:
             cls.logged_members[class_type] = []
@@ -108,6 +127,9 @@ class AutoLogOutputManager:
     def publish(cls, instance: typing.Any, table: LogTable):
         """
         Publishes the values of all registered members of an instance to a LogTable.
+
+        :param instance: The instance whose members are to be published.
+        :param table: The LogTable to publish data to.
         """
         class_type = type(instance)
         if class_type in cls.logged_members:
@@ -148,6 +170,20 @@ def autolog_output(
 ):
     """
     A decorator for methods or fields in a class to automatically log their output.
+
+    Usage:
+        @autologgable_output
+        class MyComponent:
+            my_value = 5
+
+            @autolog_output("MyValue")
+            def get_my_value(self):
+                return self.my_value
+
+    :param key: The key to use for logging the member's value.
+    :param log_type: The `LogValue.LoggableType` to log the value as. If None, it's inferred.
+    :param custom_type: A custom type string for the log entry.
+    :return: A decorator function.
     """
 
     def decorator(member: typing.Any):
@@ -189,6 +225,9 @@ def autologgable_output(cls):
     """
     A class decorator that scans for methods/fields decorated with @autolog_output
     and registers them with AutoLogOutputManager.
+
+    :param cls: The class to decorate.
+    :return: The decorated class.
     """
     for name in dir(cls):
         member = getattr(cls, name)
@@ -218,6 +257,9 @@ def autolog(cls=None, /):
 
     This decorator is designed to be used with dataclasses and supports nested dataclasses
     decorated with @autolog.
+
+    :param cls: The class to decorate.
+    :return: The decorated class or a wrapper function.
     """
 
     def wrap(clS):
@@ -299,6 +341,7 @@ def autolog(cls=None, /):
                         setattr(self, name, new_value)
 
         def registerAutologged(self) -> None:
+            """Registers the class instance with the AutoLogInputManager after initialization."""
             print(f"[AutoLog] registering {self.name}")
             AutoLogInputManager.register_class(self)
 

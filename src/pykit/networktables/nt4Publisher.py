@@ -11,6 +11,13 @@ from pykit.logvalue import LogValue
 
 
 class NT4Publisher(LogDataReciever):
+    """
+    A data receiver that publishes log data to NetworkTables.
+
+    This class listens for log table updates and publishes the data
+    to a specified NetworkTable, allowing for real-time monitoring.
+    """
+
     pykitTable: NetworkTable
     lastTable: LogTable = LogTable(0)
 
@@ -18,6 +25,12 @@ class NT4Publisher(LogDataReciever):
     publishers: dict[str, GenericPublisher] = {}
 
     def __init__(self, actLikeAKit: bool = False):
+        """
+        Initializes the NT4Publisher.
+
+        :param actLikeAKit: If True, publishes to the "/AdvantageKit" table.
+                            Otherwise, publishes to the "/PyKit" table.
+        """
         self.pykitTable = NetworkTableInstance.getDefault().getTable(
             "/AdvantageKit" if actLikeAKit else "/PyKit"
         )
@@ -26,6 +39,14 @@ class NT4Publisher(LogDataReciever):
         ).publish()
 
     def putTable(self, table: LogTable):
+        """
+        Publishes the contents of a LogTable to NetworkTables.
+
+        This method compares the new table with the last one received and only
+        publishes the values that have changed.
+
+        :param table: The LogTable to publish.
+        """
         self.timestampPublisher.set(table.getTimestamp(), table.getTimestamp())
 
         # Compare with previous table to only publish changes

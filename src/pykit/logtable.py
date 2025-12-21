@@ -5,7 +5,10 @@ from pykit.logvalue import LogValue
 
 
 class LogTable:
-    """A table of loggable values for a single timestamp."""
+    """
+    Represents a table of loggable values for a single timestamp.
+    It stores data as key-value pairs where keys are strings and values are `LogValue` objects.
+    """
 
     prefix: str
     depth: int
@@ -14,10 +17,10 @@ class LogTable:
 
     def __init__(self, timestamp: int, prefix="/") -> None:
         """
-        Constructor for the LogTable.
+        Initializes a new LogTable.
 
-        :param timestamp: The timestamp for the log entries in this table.
-        :param prefix: The prefix for the log entries.
+        :param timestamp: The timestamp for the log entries in this table, in microseconds.
+        :param prefix: The prefix for all keys in this table.
         """
         self._timestamp = timestamp
         self.prefix = prefix
@@ -26,6 +29,12 @@ class LogTable:
 
     @staticmethod
     def clone(source: "LogTable"):
+        """
+        Creates a shallow copy of a LogTable.
+
+        :param source: The LogTable to clone.
+        :return: A new LogTable instance with the same data.
+        """
         data: dict[str, LogValue] = {}
         for item, value in source.data.items():
             data[item] = value
@@ -35,11 +44,19 @@ class LogTable:
         return newTable
 
     def getTimestamp(self) -> int:
-        """Returns the timestamp of the log table."""
+        """
+        Returns the timestamp of the log table.
+
+        :return: The timestamp in microseconds.
+        """
         return self._timestamp
 
     def setTimestamp(self, timestamp: int) -> None:
-        """Sets the timestamp of the log table."""
+        """
+        Sets the timestamp of the log table.
+
+        :param timestamp: The new timestamp in microseconds.
+        """
         self._timestamp = timestamp
 
     def writeAllowed(
@@ -50,7 +67,12 @@ class LogTable:
     ) -> bool:
         """
         Checks if a write operation is allowed for a given key and type.
-        Prevents changing the type of a log entry.
+        Prevents changing the type of an existing log entry.
+
+        :param key: The key of the log entry.
+        :param logType: The `LoggableType` of the new value.
+        :param customType: The custom type string of the new value.
+        :return: True if writing is allowed, False otherwise.
         """
         if (currentVal := self.data.get(self.prefix + key)) is None:
             return True
@@ -67,6 +89,12 @@ class LogTable:
         return True
 
     def addStructSchemaNest(self, structname: str, schema: str):
+        """
+        Adds the schema for a nested WPILib struct to the log table.
+
+        :param structname: The name of the struct.
+        :param schema: The schema string of the struct.
+        """
         typeString = structname
         key = "/.schema/" + typeString
         if key in self.data.keys():
@@ -75,6 +103,12 @@ class LogTable:
         self.data[key] = LogValue(schema.encode(), "structschema")
 
     def addStructSchema(self, struct: Any, seen: Set[str]):
+        """
+        Adds the schema for a WPILib struct and its nested structs to the log table.
+
+        :param struct: The struct instance.
+        :param seen: A set of already processed type strings to avoid recursion loops.
+        """
         # Add struct schema definition to log for replay compatibility
         typeString = "struct:" + wpistruct.getTypeName(struct.__class__)
         key = "/.schema/" + typeString
@@ -90,8 +124,12 @@ class LogTable:
 
     def put(self, key: str, value: Any, typeStr: str = ""):
         """
-        Puts a value into the log table.
-        The value is wrapped in a LogValue object.
+        Puts a value into the log table, automatically handling WPILib structs and arrays.
+        The value is wrapped in a `LogValue` object.
+
+        :param key: The key for the log entry.
+        :param value: The value to be logged.
+        :param typeStr: An optional custom type string.
         """
         if hasattr(value, "WPIStruct"):
             # Handle WPILib struct types - serialize and add schema
@@ -116,6 +154,12 @@ class LogTable:
         self.putValue(key, log_value)
 
     def putValue(self, key: str, log_value: LogValue):
+        """
+        Puts a `LogValue` object into the log table.
+
+        :param key: The key for the log entry.
+        :param log_value: The `LogValue` object to be stored.
+        """
         # Handle empty array edge case - match type to previous entry to avoid type mismatch
         if isinstance(log_value.value, list) and len(log_value.value) == 0:
             currentVal = self.data.get(self.prefix + key)
@@ -134,13 +178,25 @@ class LogTable:
             print(f"Failed to insert {log_value.value}")
 
     def get(self, key: str, defaultValue: Any) -> Any:
-        """Gets a value from the log table."""
+        """
+        Gets a value from the log table.
+
+        :param key: The key of the value to retrieve.
+        :param defaultValue: The value to return if the key is not found.
+        :return: The retrieved value or the default value.
+        """
         if (log_value := self.data.get(self.prefix + key)) is not None:
             return log_value.value
         return defaultValue
 
     def getRaw(self, key: str, defaultValue: bytes) -> bytes:
-        """Gets a raw value from the log table."""
+        """
+        Gets a raw (bytes) value from the log table.
+
+        :param key: The key of the value to retrieve.
+        :param defaultValue: The value to return if the key is not found or the type is incorrect.
+        :return: The retrieved value or the default value.
+        """
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Raw:
@@ -148,7 +204,13 @@ class LogTable:
         return defaultValue
 
     def getBoolean(self, key: str, defaultValue: bool) -> bool:
-        """Gets a boolean value from the log table."""
+        """
+        Gets a boolean value from the log table.
+
+        :param key: The key of the value to retrieve.
+        :param defaultValue: The value to return if the key is not found or the type is incorrect.
+        :return: The retrieved value or the default value.
+        """
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Boolean:
@@ -156,7 +218,13 @@ class LogTable:
         return defaultValue
 
     def getInteger(self, key: str, defaultValue: int) -> int:
-        """Gets an integer value from the log table."""
+        """
+        Gets an integer value from the log table.
+
+        :param key: The key of the value to retrieve.
+        :param defaultValue: The value to return if the key is not found or the type is incorrect.
+        :return: The retrieved value or the default value.
+        """
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Integer:
@@ -164,7 +232,13 @@ class LogTable:
         return defaultValue
 
     def getFloat(self, key: str, defaultValue: float) -> float:
-        """Gets a float value from the log table."""
+        """
+        Gets a float value from the log table.
+
+        :param key: The key of the value to retrieve.
+        :param defaultValue: The value to return if the key is not found or the type is incorrect.
+        :return: The retrieved value or the default value.
+        """
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Float:
@@ -172,7 +246,13 @@ class LogTable:
         return defaultValue
 
     def getDouble(self, key: str, defaultValue: float) -> float:
-        """Gets a double value from the log table."""
+        """
+        Gets a double value from the log table.
+
+        :param key: The key of the value to retrieve.
+        :param defaultValue: The value to return if the key is not found or the type is incorrect.
+        :return: The retrieved value or the default value.
+        """
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.Double:
@@ -180,7 +260,13 @@ class LogTable:
         return defaultValue
 
     def getString(self, key: str, defaultValue: str) -> str:
-        """Gets a string value from the log table."""
+        """
+        Gets a string value from the log table.
+
+        :param key: The key of the value to retrieve.
+        :param defaultValue: The value to return if the key is not found or the type is incorrect.
+        :return: The retrieved value or the default value.
+        """
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.String:
@@ -188,7 +274,13 @@ class LogTable:
         return defaultValue
 
     def getBooleanArray(self, key: str, defaultValue: list[bool]) -> list[bool]:
-        """Gets a boolean array value from the log table."""
+        """
+        Gets a boolean array value from the log table.
+
+        :param key: The key of the value to retrieve.
+        :param defaultValue: The value to return if the key is not found or the type is incorrect.
+        :return: The retrieved value or the default value.
+        """
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.BooleanArray:
@@ -196,7 +288,13 @@ class LogTable:
         return defaultValue
 
     def getIntegerArray(self, key: str, defaultValue: list[int]) -> list[int]:
-        """Gets an integer array value from the log table."""
+        """
+        Gets an integer array value from the log table.
+
+        :param key: The key of the value to retrieve.
+        :param defaultValue: The value to return if the key is not found or the type is incorrect.
+        :return: The retrieved value or the default value.
+        """
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.IntegerArray:
@@ -204,7 +302,13 @@ class LogTable:
         return defaultValue
 
     def getFloatArray(self, key: str, defaultValue: list[float]) -> list[float]:
-        """Gets a float array value from the log table."""
+        """
+        Gets a float array value from the log table.
+
+        :param key: The key of the value to retrieve.
+        :param defaultValue: The value to return if the key is not found or the type is incorrect.
+        :return: The retrieved value or the default value.
+        """
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.FloatArray:
@@ -212,7 +316,13 @@ class LogTable:
         return defaultValue
 
     def getDoubleArray(self, key: str, defaultValue: list[float]) -> list[float]:
-        """Gets a double array value from the log table."""
+        """
+        Gets a double array value from the log table.
+
+        :param key: The key of the value to retrieve.
+        :param defaultValue: The value to return if the key is not found or the type is incorrect.
+        :return: The retrieved value or the default value.
+        """
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.DoubleArray:
@@ -220,7 +330,13 @@ class LogTable:
         return defaultValue
 
     def getStringArray(self, key: str, defaultValue: list[str]) -> list[str]:
-        """Gets a string array value from the log table."""
+        """
+        Gets a string array value from the log table.
+
+        :param key: The key of the value to retrieve.
+        :param defaultValue: The value to return if the key is not found or the type is incorrect.
+        :return: The retrieved value or the default value.
+        """
         if (
             log_value := self.data.get(self.prefix + key)
         ) is not None and log_value.log_type == LogValue.LoggableType.StringArray:
@@ -228,7 +344,12 @@ class LogTable:
         return defaultValue
 
     def getAll(self, subtableOnly: bool = False) -> dict[str, LogValue]:
-        """Returns all log values in the table."""
+        """
+        Returns all log values in the table.
+
+        :param subtableOnly: If True, returns only the entries within the current subtable's prefix.
+        :return: A dictionary of all log entries.
+        """
         if not subtableOnly:
             return self.data
         return {
@@ -239,10 +360,11 @@ class LogTable:
 
     def getSubTable(self, subtablePrefix: str) -> "LogTable":
         """
-        Returns a subtable containing only entries with the given prefix.
+        Returns a new `LogTable` instance representing a subtable of the current one.
+        The new table shares the same underlying data but has an extended prefix.
 
-        :param subtablePrefix: The prefix to filter entries by.
-        :return: A new LogTable containing only the filtered entries.
+        :param subtablePrefix: The prefix for the subtable.
+        :return: A new `LogTable` for the specified subtable.
         """
         subtable = LogTable(self.getTimestamp(), self.prefix + subtablePrefix + "/")
         subtable.data = self.data

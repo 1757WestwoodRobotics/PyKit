@@ -7,11 +7,15 @@ from pykit.logvalue import LogValue
 
 
 class LoggedDriverStation:
-    """A dataclass for holding Driver Station I/O data."""
+    """A utility class for logging and replaying Driver Station data."""
 
     @classmethod
     def saveToTable(cls, table: LogTable):
-        """Saves the current Driver Station data to the log table."""
+        """
+        Saves the current state of the `DriverStation` to a `LogTable`.
+
+        :param table: The `LogTable` to which the Driver Station data will be saved.
+        """
         alliance = DriverStation.getAlliance()
         location = DriverStation.getLocation()
         # Encode alliance station as single integer (0=none, 1-3=red, 4-6=blue)
@@ -69,6 +73,11 @@ class LoggedDriverStation:
 
     @classmethod
     def loadFromTable(cls, table: LogTable):
+        """
+        Loads the state of the `DriverStation` from a `LogTable` for simulation.
+
+        :param table: The `LogTable` from which to load the Driver Station data.
+        """
         DriverStationSim.setAllianceStationId(
             AllianceStationID(
                 table.get("AllianceStation", AllianceStationID.kRed1.value)

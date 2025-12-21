@@ -10,7 +10,11 @@ from pykit.logger import Logger
 
 
 class LoggedRobot(IterativeRobotBase):
-    """A robot base class that provides logging and replay functionality."""
+    """
+    A robot base class that provides logging and replay functionality.
+    This class extends `IterativeRobotBase` and integrates with the `Logger`
+    to automatically handle the logging of robot data and periodic loops.
+    """
 
     default_period = 0.02  # seconds
 
@@ -41,6 +45,8 @@ class LoggedRobot(IterativeRobotBase):
         """
         The main loop of the robot.
         Handles timing, logging, and calling the periodic functions.
+        This method replaces the standard `IterativeRobotBase.startCompetition`
+        to inject logging and precise timing control.
         """
         self.robotInit()
 

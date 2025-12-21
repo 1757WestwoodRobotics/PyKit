@@ -10,7 +10,7 @@ from pykit.networktables.loggednetworkinput import LoggedNetworkInput
 
 
 class Logger:
-    """Manages the logging and replay of data."""
+    """Manages the logging and replay of data for the robot."""
 
     replaySource: Optional[LogReplaySource] = None
     running: bool = False
@@ -25,12 +25,20 @@ class Logger:
 
     @classmethod
     def setReplaySource(cls, replaySource: LogReplaySource):
-        """Sets the replay source for the logger."""
+        """
+        Sets the replay source for the logger.
+
+        :param replaySource: The `LogReplaySource` to use for replaying data.
+        """
         cls.replaySource = replaySource
 
     @classmethod
     def isReplay(cls) -> bool:
-        """Returns True if the logger is in replay mode."""
+        """
+        Checks if the logger is currently in replay mode.
+
+        :return: True if in replay mode, False otherwise.
+        """
         return cls.replaySource is not None
 
     @classmethod
@@ -38,6 +46,9 @@ class Logger:
         """
         Records an output value to the log table.
         This is only active when not in replay mode.
+
+        :param key: The key under which to record the value.
+        :param value: The value to record.
         """
         if cls.running:
             cls.outputTable.put(key, value)
@@ -47,6 +58,9 @@ class Logger:
         """
         Records metadata information.
         This is only active when not in replay mode.
+
+        :param key: The key for the metadata.
+        :param value: The metadata value.
         """
         if not cls.isReplay():
             cls.metadata[key] = value
@@ -58,6 +72,9 @@ class Logger:
 
         In normal mode, it calls 'toLog' on the inputs object to record its state.
         In replay mode, it calls 'fromLog' on the inputs object to update its state from the log.
+
+        :param prefix: The prefix for the log entries.
+        :param inputs: The I/O object to process.
         """
         if cls.running:
             if cls.isReplay():
@@ -67,14 +84,27 @@ class Logger:
 
     @classmethod
     def addDataReciever(cls, reciever: LogDataReciever):
+        """
+        Adds a data receiver to the logger.
+
+        :param reciever: The `LogDataReciever` to add.
+        """
         cls.dataRecievers.append(reciever)
 
     @classmethod
     def registerDashboardInput(cls, dashboardInput: LoggedNetworkInput):
+        """
+        Registers a dashboard input for periodic updates.
+
+        :param dashboardInput: The `LoggedNetworkInput` to register.
+        """
         cls.dashboardInputs.append(dashboardInput)
 
     @classmethod
     def start(cls):
+        """
+        Starts the logger. This initializes logging or replay and sets up the necessary tables.
+        """
         if not cls.running:
             cls.running = True
             cls.cycleCount = 0
@@ -104,11 +134,13 @@ class Logger:
 
     @classmethod
     def startReciever(cls):
+        """Starts all registered data receivers."""
         for reciever in cls.dataRecievers:
             reciever.start()
 
     @classmethod
     def end(cls):
+        """Stops the logger and all data receivers, and performs necessary cleanup."""
         if cls.running:
             cls.running = False
             print("Logger ended")
@@ -124,7 +156,13 @@ class Logger:
 
     @classmethod
     def getTimestamp(cls) -> int:
-        """Returns the current timestamp for logging."""
+        """
+        Returns the current timestamp for logging.
+        In replay mode, it gets the timestamp from the log entry.
+        In normal mode, it gets the current FPGA timestamp.
+
+        :return: The current timestamp in microseconds.
+        """
         if cls.isReplay():
             return cls.entry.getTimestamp()
         # RobotController.getFPGATime may be untyped; ensure int
@@ -132,7 +170,11 @@ class Logger:
 
     @classmethod
     def periodicBeforeUser(cls):
-        """Called periodically before user code to update the log table."""
+        """
+        Called periodically before the user's robot code.
+        This method updates the log table with new data, either from the replay source
+        or from the live robot hardware.
+        """
         cls.cycleCount += 1
         if cls.running:
             entryUpdateStart = RobotController.getFPGATime()
@@ -175,7 +217,14 @@ class Logger:
 
     @classmethod
     def periodicAfterUser(cls, userCodeLength: int, periodicBeforeLength: int):
-        """Called periodically after user code to finalize the log table."""
+        """
+        Called periodically after the user's robot code.
+        This method finalizes the log entry for the current cycle by recording outputs,
+        performance data, and then sends the log table to all registered receivers.
+
+        :param userCodeLength: The execution time of the user's code in microseconds.
+        :param periodicBeforeLength: The execution time of the `periodicBeforeUser` method in microseconds.
+        """
         if cls.running:
             dsStart = RobotController.getFPGATime()
             # In normal mode, save driver station state to log
