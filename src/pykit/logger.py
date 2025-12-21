@@ -3,6 +3,7 @@ from typing import Any, Optional
 from wpilib import RobotController
 from pykit.autolog import AutoLogInputManager, AutoLogOutputManager
 from pykit.inputs.loggableds import LoggedDriverStation
+from pykit.inputs.loggablepowerdistribution import LoggedPowerDistribution
 from pykit.inputs.loggablesystemstats import LoggedSystemStats
 from pykit.logdatareciever import LogDataReciever
 from pykit.logreplaysource import LogReplaySource
@@ -234,6 +235,9 @@ class Logger:
             systemStart = RobotController.getFPGATime()
             if not cls.isReplay():
                 LoggedSystemStats.saveToTable(cls.entry.getSubTable("SystemStats"))
+                LoggedPowerDistribution.getInstance().saveToTable(
+                    cls.entry.getSubTable("PowerDistribution")
+                )
             autoLogStart = RobotController.getFPGATime()
             # Publish all auto-logged outputs
             AutoLogOutputManager.publish_all(cls.outputTable)
