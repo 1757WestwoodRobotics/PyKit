@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.9.18,<0.10.0"]
+build-backend = "uv_build"
 
 [project]
 name = "robotpy-pykit"
@@ -31,6 +31,9 @@ warn_unused_configs = true
 explicit_package_bases = true
 mypy_path = "."
 ignore_missing_imports = true
+
+[tool.uv.build-backend]
+module-name = "pykit"
 
 [[tool.mypy.overrides]]
 module = ["untyped_package.*"]
