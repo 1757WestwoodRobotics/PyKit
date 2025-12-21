@@ -8,11 +8,9 @@ class LogDataReciever:
 
     def start(self):
         """Called when the logging process starts. Can be used for initialization."""
-        pass
 
     def end(self):
         """Called when the logging process ends. Can be used for cleanup."""
-        pass
 
     def putTable(self, table: LogTable):
         """
@@ -20,4 +18,3 @@ class LogDataReciever:
 
         :param table: The `LogTable` containing the log data for a specific timestamp.
         """
-        pass

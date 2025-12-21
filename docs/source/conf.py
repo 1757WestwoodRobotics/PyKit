@@ -7,10 +7,10 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 import os
-from os.path import abspath, dirname
 import sys
 
 project = "PyKit"
+# pylint: disable=redefined-builtin
 copyright = "2025, Westwood Robotics"
 author = "Westwood Robotics"
 release = "0.2.0"

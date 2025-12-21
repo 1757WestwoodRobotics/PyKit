@@ -8,14 +8,12 @@ class LoggedNetworkInput:
 
     def __init__(self) -> None:
         """Initializes the LoggedNetworkInput."""
-        pass
 
     def periodic(self):
         """
         A method called periodically to update the input's value.
         Subclasses should override this to implement their specific logic.
         """
-        pass
 
     @staticmethod
     def removeSlash(key: str):

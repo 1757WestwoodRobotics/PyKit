@@ -8,14 +8,6 @@ from pykit.networktables.loggednetworkinput import LoggedNetworkInput
 T = TypeVar("T")
 
 
-class LoggedDashboardChooserInputs:
-    """A class to manage inputs for a LoggedDashboardChooser."""
-
-    def __init__(self) -> None:
-        """Initializes the LoggedDashboardChooserInputs."""
-        pass
-
-
 class LoggedDashboardChooser(LoggedNetworkInput, Generic[T]):
     """
     A wrapper for `SendableChooser` that supports logging and replay.

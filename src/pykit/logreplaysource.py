@@ -18,7 +18,6 @@ class LogReplaySource:
         Cleans up resources used by the replay source.
         This method can be overridden by subclasses for cleanup tasks.
         """
-        pass
 
     def updateTable(self, _table: LogTable) -> bool:
         """
