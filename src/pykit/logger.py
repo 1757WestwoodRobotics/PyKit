@@ -3,6 +3,7 @@ from typing import Any, Optional
 from wpilib import RobotController
 from pykit.autolog import AutoLogInputManager, AutoLogOutputManager
 from pykit.inputs.loggableds import LoggedDriverStation
+from pykit.inputs.loggablesystemstats import LoggedSystemStats
 from pykit.logdatareciever import LogDataReciever
 from pykit.logreplaysource import LogReplaySource
 from pykit.logtable import LogTable
@@ -230,13 +231,19 @@ class Logger:
             # In normal mode, save driver station state to log
             if not cls.isReplay():
                 LoggedDriverStation.saveToTable(cls.entry.getSubTable("DriverStation"))
+            systemStart = RobotController.getFPGATime()
+            if not cls.isReplay():
+                LoggedSystemStats.saveToTable(cls.entry.getSubTable("SystemStats"))
             autoLogStart = RobotController.getFPGATime()
             # Publish all auto-logged outputs
             AutoLogOutputManager.publish_all(cls.outputTable)
             autoLogEnd = RobotController.getFPGATime()
             if not cls.isReplay():
                 cls.recordOutput(
-                    "Logger/DriverStationMS", (autoLogStart - dsStart) / 1000.0
+                    "Logger/DriverStationMS", (systemStart - dsStart) / 1000.0
+                )
+                cls.recordOutput(
+                    "Logger/SystemStatsMS", (autoLogStart - systemStart) / 1000.0
                 )
                 # Log all auto-logged inputs
                 for logged_input in AutoLogInputManager.getInputs():
