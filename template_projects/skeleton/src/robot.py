@@ -14,7 +14,7 @@ import wpilib
 class Robot(LoggedRobot):
     def __init__(self) -> None:
         super().__init__()
-        Logger.recordMetadata("Robot", __class__.__name__)
+        Logger.recordMetadata("Robot", "PyKitRobot")
 
         match constants.kRobotMode:
             case constants.RobotModes.REAL:

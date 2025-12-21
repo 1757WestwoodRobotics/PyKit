@@ -12,9 +12,10 @@ class LoggedNetworkString(LoggedNetworkInput):
         self._entry = (
             NetworkTableInstance.getDefault().getStringTopic(key).getEntry(defaultValue)
         )
-        self.setDefault(defaultValue)
-
         Logger.registerDashboardInput(self)
+
+        self._entry.set(defaultValue)
+        self.setDefault(defaultValue)
 
     def __call__(self) -> str:
         return self.value

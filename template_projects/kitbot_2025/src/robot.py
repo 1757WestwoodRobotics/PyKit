@@ -22,7 +22,7 @@ class KitBot2025(LoggedRobot):
 
     def __init__(self) -> None:
         super().__init__()
-        Logger.recordMetadata("Robot", __class__.__name__)
+        Logger.recordMetadata("Robot", "KitBot2025")
 
         match constants.kRobotMode:
             case constants.RobotModes.REAL:

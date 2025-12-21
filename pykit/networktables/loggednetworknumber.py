@@ -13,9 +13,9 @@ class LoggedNetworkNumber(LoggedNetworkInput):
             NetworkTableInstance.getDefault().getDoubleTopic(key).getEntry(defaultValue)
         )
         Logger.registerDashboardInput(self)
+
         self._entry.set(defaultValue)
         self.setDefault(defaultValue)
-
 
     def __call__(self) -> float:
         return self.value

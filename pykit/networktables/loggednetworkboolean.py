@@ -18,8 +18,8 @@ class LoggedNetworkBoolean(LoggedNetworkInput):
         )
         Logger.registerDashboardInput(self)
 
+        self._entry.set(defaultValue)
         self.setDefault(defaultValue)
-
 
     def __call__(self) -> bool:
         return self.value
