@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECTS=(kitbot_2025 skeleton)
+PROJECTS=(kitbot_2025 diff_drive skeleton)
 
 for project in "${PROJECTS[@]}"; do
     rm -f $project.zip # Remove existing zip file if it exists

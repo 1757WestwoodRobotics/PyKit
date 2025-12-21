@@ -1,0 +1,37 @@
+[project]
+name = "pykit_kitbot_2025"
+version = "0.1.0"
+description = "An FRC Robot"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "wpilib>=2025.3.2.2",
+    "robotpy-pykit==0.2.0",
+    "robotpy-pykit-watch==0.1.0",
+    "robotpy-halsim-gui>=2025.3.2.2",
+    "robotpy>=2025.3.2.2",
+    "robotpy-cli>=2024.0.0",
+    "black>=25.9.8",
+    "pylint>=4.0.2",
+    "robotpy-pathplannerlib>=2025.2.7",
+    "phoenix6>=25.4.2",
+    "robotpy-navx>=2025.0.1.2",
+    "robotpy-rev>=2025.0.3.1",
+    "robotpy-commands-v2>=2025.3.2",
+]
+
+[tool.robotpy]
+
+# Version of robotpy this project depends on
+robotpy_version = "2025.3.2.2"
+robotpy_extras = [
+  "sim",
+  "commands2",
+  "navx",
+  "phoenix6",
+  "rev",
+  "pathplannerlib"
+]
+requires = [
+  "robotpy-pykit==0.2.0",
+]
