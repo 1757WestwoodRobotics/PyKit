@@ -27,6 +27,8 @@ class WPILOGReader(LogReplaySource):
     Reads a `.wpilog` file and provides the data as a replay source for the logger.
     """
 
+    timestamp: int | None
+
     def __init__(self, filename: str) -> None:
         """
         Initializes the WPILOGReader.
