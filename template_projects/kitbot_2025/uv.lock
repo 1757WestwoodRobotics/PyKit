@@ -719,6 +719,7 @@ dependencies = [
     { name = "pylint" },
     { name = "robotpy" },
     { name = "robotpy-cli" },
+    { name = "robotpy-commands-v2" },
     { name = "robotpy-halsim-gui" },
     { name = "robotpy-navx" },
     { name = "robotpy-pathplannerlib" },
@@ -735,10 +736,11 @@ requires-dist = [
     { name = "pylint", specifier = ">=4.0.2" },
     { name = "robotpy", specifier = ">=2025.3.2.2" },
     { name = "robotpy-cli", specifier = ">=2024.0.0" },
+    { name = "robotpy-commands-v2", specifier = ">=2025.3.2" },
     { name = "robotpy-halsim-gui", specifier = ">=2025.3.2.2" },
     { name = "robotpy-navx", specifier = ">=2025.0.1.2" },
     { name = "robotpy-pathplannerlib", specifier = ">=2025.2.7" },
-    { name = "robotpy-pykit", specifier = "==0.1.4" },
+    { name = "robotpy-pykit", specifier = "==0.2.0" },
     { name = "robotpy-pykit-watch", specifier = "==0.1.0" },
     { name = "robotpy-rev", specifier = ">=2025.0.3.1" },
     { name = "wpilib", specifier = ">=2025.3.2.2" },
@@ -1142,7 +1144,7 @@ wheels = [
 
 [[package]]
 name = "robotpy-pykit"
-version = "0.1.4"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pyfrc" },
@@ -1152,9 +1154,9 @@ dependencies = [
     { name = "robotpy-wpiutil" },
     { name = "wpilib" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fc/00/f5ef57c56be09dddfd972747658a4d14b6099657bea2d2f2dbfb6eb979ab/robotpy_pykit-0.1.4.tar.gz", hash = "sha256:fbf150cd9b38efa02a8b45d2bc11fce6d8ae6bbd71e2e6a68be4a74ef1e8a3a1", size = 18162, upload-time = "2025-12-19T17:43:23.878Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2f/15/e015b068f8e51f7ec220a0b755081d2879d9fc45c04999e8d0ceb84204e6/robotpy_pykit-0.2.0.tar.gz", hash = "sha256:b8dc7e783f2eef74c1ab103ee1b5944712c26e5735412aeddeac9b948807c118", size = 16775, upload-time = "2025-12-21T05:12:39.065Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/09/c5/0ab9d9d2df38919cd849754262357cc7a61475c57244216656daf9c02032/robotpy_pykit-0.1.4-py3-none-any.whl", hash = "sha256:dfd5111782e5a2dae4a05c199028ab5a3914a96094959fa514d81008cc0274b7", size = 21595, upload-time = "2025-12-19T17:43:23.084Z" },
+    { url = "https://files.pythonhosted.org/packages/fc/23/0f47d273bc2fd3cf3f24147afe3782852fbc4beeee458974d7717f3f12a7/robotpy_pykit-0.2.0-py3-none-any.whl", hash = "sha256:b8b0533073583201bc4f314b828c7380e89f840b1a6ef92487372deec22e6edd", size = 24115, upload-time = "2025-12-21T05:12:37.948Z" },
 ]
 
 [[package]]

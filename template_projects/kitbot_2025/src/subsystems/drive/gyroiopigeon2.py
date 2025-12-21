@@ -4,8 +4,8 @@ from phoenix6.hardware.pigeon2 import Pigeon2
 from wpimath.geometry import Rotation2d
 
 from subsystems.drive.gyroio import GyroIO
+from subsystems.drive import driveconstants
 
-import driveconstants
 from constants import kRobotFrequency
 from constants.math import kRadiansPerDegree
 

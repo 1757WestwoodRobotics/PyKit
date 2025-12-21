@@ -6,11 +6,11 @@ from phoenix6.controls.voltage_out import VoltageOut
 from phoenix6.hardware.core.core_talon_fx import BaseStatusSignal
 from phoenix6.hardware.talon_fx import TalonFX
 from subsystems.drive.driveio import DriveIO
+from subsystems.drive import driveconstants
 
 from constants import kRobotFrequency
 from constants.math import kRadiansPerRevolution
 
-import driveconstants
 from util.phoenixutil import tryUntilOk
 
 

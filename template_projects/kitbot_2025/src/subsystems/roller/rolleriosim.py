@@ -1,9 +1,9 @@
 from wpilib.simulation import DCMotorSim
 from wpimath.system.plant import DCMotor, LinearSystemId
 from subsystems.roller.rollerio import RollerIO
+from subsystems.roller import rollerconstants
 
 from constants import kRobotPeriod
-import rollerconstants
 from util.helpfulmath import clamp
 
 

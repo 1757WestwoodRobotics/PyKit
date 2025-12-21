@@ -17,6 +17,7 @@ dependencies = [
     "phoenix6>=25.4.2",
     "robotpy-navx>=2025.0.1.2",
     "robotpy-rev>=2025.0.3.1",
+    "robotpy-commands-v2>=2025.3.2",
 ]
 
 [tool.robotpy]

@@ -1,11 +1,10 @@
 from wpilib.simulation import DifferentialDrivetrainSim
 from wpimath.controller import PIDController
 from subsystems.drive.driveio import DriveIO
+from subsystems.drive import driveconstants
 
 from util.helpfulmath import clamp
 from constants import kRobotPeriod
-
-import driveconstants
 
 
 class DriveIOSim(DriveIO):

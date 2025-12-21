@@ -1,9 +1,9 @@
 from rev import SparkMax, SparkMaxConfig
 from subsystems.roller.rollerio import RollerIO
+from subsystems.roller import rollerconstants
 
 from constants.math import kRadiansPerRevolution, kSecondsPerMinute
-import rollerconstants
-from util.sparkutil import tryUntilOk, ifOk
+from util.sparkutil import tryUntilOk, isOk
 
 
 class RollerIOSpark(RollerIO):
@@ -37,22 +37,22 @@ class RollerIOSpark(RollerIO):
         )
 
     def updateInputs(self, inputs: RollerIO.RollerIOInputs) -> None:
-        ifOk(
+        isOk(
             self.rollerMotor,
             self.encoder.getPosition,
             lambda v: setattr(inputs, "positionRad", v),
         )
-        ifOk(
+        isOk(
             self.rollerMotor,
             self.encoder.getVelocity,
             lambda v: setattr(inputs, "velocityRadPerSec", v),
         )
-        ifOk(
+        isOk(
             self.rollerMotor,
             self.rollerMotor.getAppliedOutput,
             lambda v: setattr(inputs, "appliedVolts", v * 12.0),
         )
-        ifOk(
+        isOk(
             self.rollerMotor,
             self.rollerMotor.getOutputCurrent,
             lambda v: setattr(inputs, "currentAmps", v),

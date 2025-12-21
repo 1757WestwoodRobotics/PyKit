@@ -1,10 +1,10 @@
 from rev import ClosedLoopSlot, SparkMax, SparkMaxConfig
 from subsystems.drive.driveio import DriveIO
+from subsystems.drive import driveconstants
 
-import driveconstants
 
 from constants.math import kRadiansPerRevolution, kSecondsPerMinute
-from util.sparkutil import tryUntilOk, ifOk, ifOkMulti
+from util.sparkutil import tryUntilOk, isOk, isOkMulti
 
 
 class DriveIOSpark(DriveIO):
@@ -85,17 +85,17 @@ class DriveIOSpark(DriveIO):
         )
 
     def updateInputs(self, inputs: DriveIO.DriveIOInputs) -> None:
-        ifOk(
+        isOk(
             self.leftLeader,
             self.leftEncoder.getPosition,
             lambda v: setattr(inputs, "leftPositionRad", v),
         )
-        ifOk(
+        isOk(
             self.leftLeader,
             self.leftEncoder.getVelocity,
             lambda v: setattr(inputs, "leftVelocityRadPerSec", v),
         )
-        ifOkMulti(
+        isOkMulti(
             self.leftLeader,
             [self.leftLeader.getAppliedOutput, self.leftLeader.getBusVoltage],
             lambda multiResults: setattr(
@@ -104,7 +104,7 @@ class DriveIOSpark(DriveIO):
                 multiResults[0] * multiResults[1],
             ),
         )
-        ifOkMulti(
+        isOkMulti(
             self.leftLeader,
             [self.leftLeader.getOutputCurrent, self.leftFollower.getOutputCurrent],
             lambda multiResults: setattr(
@@ -114,17 +114,17 @@ class DriveIOSpark(DriveIO):
             ),
         )
 
-        ifOk(
+        isOk(
             self.rightLeader,
             self.rightEncoder.getPosition,
             lambda v: setattr(inputs, "rightPositionRad", v),
         )
-        ifOk(
+        isOk(
             self.rightLeader,
             self.rightEncoder.getVelocity,
             lambda v: setattr(inputs, "rightVelocityRadPerSec", v),
         )
-        ifOkMulti(
+        isOkMulti(
             self.rightLeader,
             [self.rightLeader.getAppliedOutput, self.rightLeader.getBusVoltage],
             lambda multiResults: setattr(
@@ -133,7 +133,7 @@ class DriveIOSpark(DriveIO):
                 multiResults[0] * multiResults[1],
             ),
         )
-        ifOkMulti(
+        isOkMulti(
             self.rightLeader,
             [self.rightLeader.getOutputCurrent, self.rightFollower.getOutputCurrent],
             lambda multiResults: setattr(
