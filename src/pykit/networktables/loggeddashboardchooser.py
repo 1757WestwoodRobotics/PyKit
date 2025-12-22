@@ -1,4 +1,4 @@
-from typing import Optional, Generic, TypeVar
+from typing import Callable, Optional, Generic, TypeVar
 
 from wpilib import SendableChooser, SmartDashboard
 from pykit.logger import Logger
@@ -18,6 +18,8 @@ class LoggedDashboardChooser(LoggedNetworkInput, Generic[T]):
 
     key: str
     selectedValue: str = ""
+    previousValue: Optional[str] = None
+    listener: Optional[Callable[[T], None]] = None
 
     sendableChooser: SendableChooser = SendableChooser()
 
@@ -64,7 +66,7 @@ class LoggedDashboardChooser(LoggedNetworkInput, Generic[T]):
         assert self.selectedValue is not None
         return self.options.get(self.selectedValue)
 
-    def periodic(self):
+    def periodic(self) -> None:
         """
         Updates the chooser's state. In normal mode, it reads from NetworkTables.
         In replay mode, it reads from the log.
@@ -72,12 +74,25 @@ class LoggedDashboardChooser(LoggedNetworkInput, Generic[T]):
         # In normal mode, read from NetworkTables; in replay mode, read from log
         if not Logger.isReplay():
             self.selectedValue = self.sendableChooser.getSelected()
-            if self.selectedValue is None:
-                self.selectedValue = ""
 
+        if self.selectedValue is None:
+            self.selectedValue = ""
         Logger.processInputs(self.prefix + "/SmartDashboard", self)
+        if self.selectedValue != self.previousValue and self.listener is not None:
+            selected = self.getSelected()
+            if selected is not None:
+                self.listener(selected)
+        self.previousValue = self.selectedValue
 
-    def toLog(self, table: LogTable, prefix: str):
+    def onChange(self, callback: Callable[[T], None]) -> None:
+        """
+        Registers a callback to use upon value changes.
+
+        :param callback: The function to call when the internal value has changed
+        """
+        self.listener = callback
+
+    def toLog(self, table: LogTable, prefix: str) -> None:
         """
         Logs the selected value to the table.
 
@@ -86,7 +101,7 @@ class LoggedDashboardChooser(LoggedNetworkInput, Generic[T]):
         """
         table.put(f"{prefix}/{self.key}", self.selectedValue)
 
-    def fromLog(self, table: LogTable, prefix: str):
+    def fromLog(self, table: LogTable, prefix: str) -> None:
         """
         Loads the selected value from the table.
 
