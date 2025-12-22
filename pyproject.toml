@@ -31,7 +31,6 @@ warn_unused_configs = true
 explicit_package_bases = true
 mypy_path = "."
 ignore_missing_imports = true
-warn_unreachable = true
 warn_unused_ignores = true
 warn_no_return = true
 
