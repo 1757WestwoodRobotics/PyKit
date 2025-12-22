@@ -3,6 +3,7 @@ from ntcore import (
     IntegerPublisher,
     NetworkTable,
     NetworkTableInstance,
+    PubSubOptions,
 )
 
 from pykit.logdatareciever import LogDataReciever
@@ -35,9 +36,11 @@ class NT4Publisher(LogDataReciever):
         self.pykitTable = NetworkTableInstance.getDefault().getTable(
             "/AdvantageKit" if actLikeAKit else "/PyKit"
         )
+        options = PubSubOptions()
+        options.sendAll = True
         self.timestampPublisher = self.pykitTable.getIntegerTopic(
             self.timestampKey[1:]
-        ).publish()
+        ).publish(options)
 
     def putTable(self, table: LogTable):
         """
