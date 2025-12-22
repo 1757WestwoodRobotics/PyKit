@@ -1,3 +1,3 @@
 extraHeader = "PyKit"
 entryMetadata = '{"source": "PyKit"}'
-entryMetadataUnits = '{"source": "PyKit", "unit": "%s"}'
+entryMetadataUnits = '{"source": "PyKit", "unit": "$UNITSTR"}'
