@@ -27,7 +27,8 @@ class _ConsoleRecorder:
                 self.orig.write(s)
                 try:
                     self.orig.flush()
-                except Exception:
+                except (OSError, ValueError):
+                    # I/O errors or writing to a closed stream
                     pass
                 # buffer until newline then record each line
                 self.buffer += s
@@ -36,25 +37,23 @@ class _ConsoleRecorder:
                     try:
                         # Logger may not yet be initialized when class is defined; reference at runtime
                         Logger.recordOutput("Console", line)
-                    except Exception:
+                    except (AttributeError, RuntimeError, ValueError):
+                        # Logger may not be ready or the logging backend raised an error
                         pass
-        except Exception:
+        except (OSError, ValueError, RuntimeError):
+            # Locking errors, I/O errors, or value errors from stream operations
             pass
 
     def flush(self):
-        try:
-            if self.buffer:
-                try:
-                    Logger.recordOutput("Console", self.buffer)
-                except Exception:
-                    pass
-                self.buffer = ""
-        except Exception:
-            pass
+        if self.buffer:
+            Logger.recordOutput("Console", self.buffer)
+            self.buffer = ""
         try:
             self.orig.flush()
-        except Exception:
+        except (OSError, ValueError):
+            # I/O errors or writing to a closed stream
             pass
+
 
 class Logger:
     """Manages the logging and replay of data for the robot."""
@@ -193,7 +192,8 @@ class Logger:
                     sys.stdout = cls._console_recorder_stdout
                     sys.stderr = cls._console_recorder_stderr
                     cls._console_wrapped = True
-                except Exception:
+                except (AttributeError, RuntimeError, TypeError):
+                    # If sys streams are missing or recorder construction failed
                     pass
 
             RobotController.setTimeSource(cls.getTimestamp)
@@ -219,7 +219,8 @@ class Logger:
                         sys.stdout = cls._orig_stdout
                     if cls._orig_stderr is not None:
                         sys.stderr = cls._orig_stderr
-                except Exception:
+                except (AttributeError, RuntimeError):
+                    # Restoring original streams failed
                     pass
                 cls._console_wrapped = False
                 cls._console_recorder_stdout = None
