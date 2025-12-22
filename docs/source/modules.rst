@@ -1,5 +1,5 @@
-pykit
-===
+pykit package
+=============
 
 .. toctree::
    :maxdepth: 2
