@@ -44,7 +44,7 @@ class Logger:
         return cls.replaySource is not None
 
     @classmethod
-    def recordOutput(cls, key: str, value: Any):
+    def recordOutput(cls, key: str, value: Any, unit: Optional[str] = None):
         """
         Records an output value to the log table.
         This is only active when not in replay mode.
@@ -53,7 +53,7 @@ class Logger:
         :param value: The value to record.
         """
         if cls.running:
-            cls.outputTable.put(key, value)
+            cls.outputTable.put(key, value, unit=unit)
 
     @classmethod
     def recordMetadata(cls, key: str, value: str):

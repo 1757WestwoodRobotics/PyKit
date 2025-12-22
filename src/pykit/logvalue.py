@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Any
+from typing import Any, Optional
 
 # Mapping of LoggableType enum index to WPILOG/NT4 type strings
 _WPILOG_TYPES = [
@@ -41,8 +41,11 @@ class LogValue:
     log_type: "LogValue.LoggableType"
     custom_type: str
     value: Any
+    unit: Optional[str] = None
 
-    def __init__(self, value: Any, typeStr: str = "") -> None:
+    def __init__(
+        self, value: Any, typeStr: str = "", unit: Optional[str] = None
+    ) -> None:
         """
         Initializes a LogValue, inferring the loggable type from the value's Python type.
 
@@ -52,6 +55,7 @@ class LogValue:
         """
         self.value = value
         self.custom_type = typeStr
+        self.unit = unit
         # Type inference - bool must be checked before int since bool is subclass of int
         if isinstance(value, bool):
             self.log_type = LogValue.LoggableType.Boolean
@@ -81,7 +85,10 @@ class LogValue:
 
     @staticmethod
     def withType(
-        log_type: "LogValue.LoggableType", data: Any, typeStr: str = ""
+        log_type: "LogValue.LoggableType",
+        data: Any,
+        typeStr: str = "",
+        unit: Optional[str] = None,
     ) -> "LogValue":
         """
         Creates a LogValue with a specified loggable type.
@@ -94,6 +101,7 @@ class LogValue:
         val = LogValue(1, typeStr)
         val.log_type = log_type
         val.value = data
+        val.unit = unit
         return val
 
     def getWPILOGType(self) -> str:

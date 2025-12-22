@@ -226,6 +226,7 @@ class WPILOGWriter(LogDataReciever):
         # Write changed entries to log
         for key, newValue in newMap.items():
             fieldType = newValue.log_type
+            fieldUnit = newValue.unit
             appendData = False
 
             # Register new field or detect changes
@@ -234,12 +235,19 @@ class WPILOGWriter(LogDataReciever):
                 entryId = self.log.start(
                     key,
                     newValue.getWPILOGType(),
-                    wpilogconstants.entryMetadata,
+                    (
+                        wpilogconstants.entryMetadata
+                        if fieldUnit is None
+                        else wpilogconstants.entryMetadataUnits.replace(
+                            "$UNITSTR", fieldUnit
+                        )
+                    ),
                     table.getTimestamp(),
                 )
                 self.entryIds[key] = entryId
                 self.entryTypes[key] = newValue.log_type
-                self.entryUnits[key] = ""
+                if fieldUnit is not None:
+                    self.entryUnits[key] = fieldUnit
 
                 appendData = True
             elif newValue != oldMap.get(key):
@@ -256,6 +264,16 @@ class WPILOGWriter(LogDataReciever):
 
             if appendData:
                 entryId = self.entryIds[key]
+                # check if unit changed
+                if fieldUnit is not None and self.entryUnits.get(key) != fieldUnit:
+                    self.log.setMetadata(
+                        entryId,
+                        wpilogconstants.entryMetadataUnits.replace(
+                            "$UNITSTR", fieldUnit
+                        ),
+                        table.getTimestamp(),
+                    )
+                    self.entryUnits[key] = fieldUnit
                 match fieldType:
                     case LogValue.LoggableType.Raw:
                         self.log.appendRaw(

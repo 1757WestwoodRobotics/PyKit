@@ -47,6 +47,7 @@ class AutoLogOutputManager:
     #   'is_method': bool (True if it's a method, False if it's a field)
     #   'log_type': LogValue.LoggableType (the type to log as)
     #   'custom_type': str (optional custom type string)
+    #   'unit': str (optional unit string)
     logged_members: typing.Dict[
         typing.Type, typing.List[typing.Dict[str, typing.Any]]
     ] = {}
@@ -100,6 +101,7 @@ class AutoLogOutputManager:
         log_type: typing.Optional[LogValue.LoggableType],
         key: str = "",
         custom_type: str = "",
+        unit: typing.Optional[str] = None,
     ):
         """
         Registers a member (field or method) of a class for automatic output logging.
@@ -110,6 +112,7 @@ class AutoLogOutputManager:
         :param log_type: The `LogValue.LoggableType` to log the member as.
         :param key: The key to use for logging. Defaults to the member name.
         :param custom_type: A custom type string for the log entry.
+        :param unit: The unit string for the log entry.
         """
         if class_type not in cls.logged_members:
             cls.logged_members[class_type] = []
@@ -120,6 +123,7 @@ class AutoLogOutputManager:
                 "log_type": log_type,
                 "key": key,
                 "custom_type": custom_type,
+                "unit": unit,
             }
         )
 
@@ -138,6 +142,7 @@ class AutoLogOutputManager:
                 is_method = member_info["is_method"]
                 log_type = member_info["log_type"]
                 custom_type = member_info["custom_type"]
+                unit = member_info["unit"]
 
                 key = member_info["key"] or member_name
 
@@ -157,7 +162,7 @@ class AutoLogOutputManager:
                     table.put(key, value)
                 else:
                     # Wrap value in LogValue and override type if specified
-                    log_value = LogValue(value, custom_type)
+                    log_value = LogValue(value, custom_type, unit)
                     if log_type is not None:
                         log_value.log_type = log_type
                     table.putValue(key, log_value)
@@ -167,6 +172,7 @@ def autolog_output(
     key: str,
     log_type: typing.Optional[LogValue.LoggableType] = None,
     custom_type: str = "",
+    unit: typing.Optional[str] = None,
 ):
     """
     A decorator for methods or fields in a class to automatically log their output.
@@ -183,6 +189,7 @@ def autolog_output(
     :param key: The key to use for logging the member's value.
     :param log_type: The `LogValue.LoggableType` to log the value as. If None, it's inferred.
     :param custom_type: A custom type string for the log entry.
+    :param unit: The unit string for the log entry.
     :return: A decorator function.
     """
 
@@ -198,6 +205,7 @@ def autolog_output(
                 "log_type": log_type,
                 "custom_type": custom_type,
                 "key": key,
+                "unit": unit,
             }
         else:
             # It's a field (this case is harder to handle directly with a decorator
@@ -215,6 +223,7 @@ def autolog_output(
                 "log_type": log_type,
                 "custom_type": custom_type,
                 "key": key,
+                "unit": unit,
             }
         return member
 
@@ -242,6 +251,7 @@ def autologgable_output(cls):
                 ),
                 typing.cast(str, info.get("key", name)),
                 typing.cast(str, info.get("custom_type", "")),
+                typing.cast(str, info.get("unit", "")),
             )
 
     setattr(cls, "_do_autolog", True)

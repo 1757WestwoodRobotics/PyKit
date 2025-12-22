@@ -1,4 +1,4 @@
-from typing import Any, Set, cast
+from typing import Any, Optional, Set, cast
 
 from wpiutil import wpistruct
 from pykit.logvalue import LogValue
@@ -122,7 +122,7 @@ class LogTable:
         wpistruct.forEachNested(struct.__class__, self.addStructSchemaNest)
         seen.remove(typeString)
 
-    def put(self, key: str, value: Any, typeStr: str = ""):
+    def put(self, key: str, value: Any, typeStr: str = "", unit: Optional[str] = None):
         """
         Puts a value into the log table, automatically handling WPILib structs and arrays.
         The value is wrapped in a `LogValue` object.
@@ -150,7 +150,7 @@ class LogTable:
                 "struct:" + wpistruct.getTypeName(value[0].__class__) + "[]",
             )
         else:
-            log_value = LogValue(value, typeStr)
+            log_value = LogValue(value, typeStr, unit)
         self.putValue(key, log_value)
 
     def putValue(self, key: str, log_value: LogValue):

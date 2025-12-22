@@ -23,6 +23,7 @@ class NT4Publisher(LogDataReciever):
 
     timestampPublisher: IntegerPublisher
     publishers: dict[str, GenericPublisher] = {}
+    units: dict[str, str] = {}
 
     def __init__(self, actLikeAKit: bool = False):
         """
@@ -57,6 +58,7 @@ class NT4Publisher(LogDataReciever):
             if newValue == oldMap.get(key):
                 continue
             key = key[1:]
+            unit = newValue.unit
             # Create publisher for new topics
             publisher = self.publishers.get(key)
             if publisher is None:
@@ -64,7 +66,17 @@ class NT4Publisher(LogDataReciever):
                     newValue.getNT4Type()
                 )
                 self.publishers[key] = publisher
+                if unit is not None:
+                    self.pykitTable.getTopic(key).setProperty("unit", unit)
+                    self.units[key] = unit
 
+            # Update unit if it has changed
+            if unit is not None and self.units.get(key) != unit:
+                self.pykitTable.getTopic(key).setProperty("unit", unit)
+                self.units[key] = unit
+
+            if unit is not None:
+                print(self.pykitTable.getTopic(key).getProperties())
             match newValue.log_type:
                 case LogValue.LoggableType.Raw:
                     publisher.setRaw(newValue.value, table.getTimestamp())
