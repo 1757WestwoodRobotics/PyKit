@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
 from wpilib import RobotController
+from pykit.alertlogger import AlertLogger
 from pykit.autolog import AutoLogInputManager, AutoLogOutputManager
 from pykit.inputs.loggableds import LoggedDriverStation
 from pykit.inputs.loggablepowerdistribution import LoggedPowerDistribution
@@ -241,7 +242,9 @@ class Logger:
             autoLogStart = RobotController.getFPGATime()
             # Publish all auto-logged outputs
             AutoLogOutputManager.publish_all(cls.outputTable)
-            autoLogEnd = RobotController.getFPGATime()
+            alertLogStart = RobotController.getFPGATime()
+            AlertLogger.periodic(cls.outputTable)
+            alertLogEnd = RobotController.getFPGATime()
             if not cls.isReplay():
                 cls.recordOutput(
                     "Logger/DriverStationMS", (systemStart - dsStart) / 1000.0
@@ -257,10 +260,13 @@ class Logger:
                     )
 
             cls.recordOutput(
-                "Logger/AutoLogOutputMS", (autoLogEnd - autoLogStart) / 1000.0
+                "Logger/AutoLogOutputMS", (alertLogStart - autoLogStart) / 1000.0
+            )
+            cls.recordOutput(
+                "Logger/AlertLoggerMS", (alertLogEnd - alertLogStart) / 1000.0
             )
             cls.recordOutput("LoggedRobot/UserCodeMS", userCodeLength / 1000.0)
-            periodicAfterLength = autoLogEnd - dsStart
+            periodicAfterLength = alertLogEnd - dsStart
             cls.recordOutput(
                 "LoggedRobot/LogPeriodicMS",
                 (periodicBeforeLength + periodicAfterLength) / 1000.0,
