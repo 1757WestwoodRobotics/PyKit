@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "wpilib>=2025.3.2.2",
-    "robotpy-pykit==0.2.0",
+    "robotpy-pykit==0.2.1",
     "robotpy-pykit-watch==0.1.0",
     "robotpy-halsim-gui>=2025.3.2.2",
     "robotpy>=2025.3.2.2",
@@ -23,5 +23,5 @@ robotpy_extras = [
   "sim"
 ]
 requires = [
-  "robotpy-pykit==0.2.0",
+  "robotpy-pykit==0.2.1",
 ]

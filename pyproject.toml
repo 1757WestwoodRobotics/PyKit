@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "robotpy-pykit"
-version = "0.2.0"
+version = "0.2.1"
 description = "A logging, telemetry, and replay framework for FRC robots running python"
 readme = "README.md"
 authors = [{ name = "Luke Maxwell", email = "luke@whsrobotics.org" }]
