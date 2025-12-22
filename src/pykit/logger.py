@@ -1,4 +1,6 @@
 from typing import Any, Optional
+import sys
+import threading
 
 from wpilib import RobotController
 from pykit.alertlogger import AlertLogger
@@ -12,6 +14,48 @@ from pykit.logtable import LogTable
 from pykit.networktables.loggednetworkinput import LoggedNetworkInput
 
 
+class _ConsoleRecorder:
+    def __init__(self, orig):
+        self.orig = orig
+        self.lock = threading.Lock()
+        self.buffer = ""
+
+    def write(self, s):
+        try:
+            with self.lock:
+                # always write through to original stream
+                self.orig.write(s)
+                try:
+                    self.orig.flush()
+                except Exception:
+                    pass
+                # buffer until newline then record each line
+                self.buffer += s
+                while "\n" in self.buffer:
+                    line, self.buffer = self.buffer.split("\n", 1)
+                    try:
+                        # Logger may not yet be initialized when class is defined; reference at runtime
+                        Logger.recordOutput("Console", line)
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
+    def flush(self):
+        try:
+            if self.buffer:
+                try:
+                    Logger.recordOutput("Console", self.buffer)
+                except Exception:
+                    pass
+                self.buffer = ""
+        except Exception:
+            pass
+        try:
+            self.orig.flush()
+        except Exception:
+            pass
+
 class Logger:
     """Manages the logging and replay of data for the robot."""
 
@@ -22,6 +66,13 @@ class Logger:
     outputTable: LogTable = LogTable(0)
     metadata: dict[str, str] = {}
     checkConsole: bool = True
+
+    # Internal fields for console capturing
+    _orig_stdout: Optional[Any] = None
+    _orig_stderr: Optional[Any] = None
+    _console_wrapped: bool = False
+    _console_recorder_stdout: Optional[Any] = None
+    _console_recorder_stderr: Optional[Any] = None
 
     dataRecievers: list[LogDataReciever] = []
     dashboardInputs: list[LoggedNetworkInput] = []
@@ -132,6 +183,19 @@ class Logger:
             for key, value in cls.metadata.items():
                 metadataTable.put(key, value)
 
+            # Setup console capture to record prints under "Console"
+            if cls.checkConsole and not cls._console_wrapped:
+                try:
+                    cls._orig_stdout = sys.stdout
+                    cls._orig_stderr = sys.stderr
+                    cls._console_recorder_stdout = _ConsoleRecorder(cls._orig_stdout)
+                    cls._console_recorder_stderr = _ConsoleRecorder(cls._orig_stderr)
+                    sys.stdout = cls._console_recorder_stdout
+                    sys.stderr = cls._console_recorder_stderr
+                    cls._console_wrapped = True
+                except Exception:
+                    pass
+
             RobotController.setTimeSource(cls.getTimestamp)
             cls.periodicBeforeUser()
 
@@ -147,6 +211,21 @@ class Logger:
         if cls.running:
             cls.running = False
             print("Logger ended")
+
+            # Restore console if we wrapped it
+            if cls._console_wrapped:
+                try:
+                    if cls._orig_stdout is not None:
+                        sys.stdout = cls._orig_stdout
+                    if cls._orig_stderr is not None:
+                        sys.stderr = cls._orig_stderr
+                except Exception:
+                    pass
+                cls._console_wrapped = False
+                cls._console_recorder_stdout = None
+                cls._console_recorder_stderr = None
+                cls._orig_stdout = None
+                cls._orig_stderr = None
 
             if cls.isReplay():
                 rs = cls.replaySource
