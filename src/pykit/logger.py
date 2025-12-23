@@ -56,7 +56,14 @@ class _ConsoleRecorder:
 
 
 class Logger:
-    """Manages the logging and replay of data for the robot."""
+    """Manages the logging and replay of data for the robot.
+
+    This class handles recording data to logs during normal operation and replaying
+    data from logs during replay mode. It manages log tables, metadata, console output
+    capturing, and periodic updates.
+
+
+    """
 
     replaySource: Optional[LogReplaySource] = None
     running: bool = False
@@ -257,6 +264,8 @@ class Logger:
         Called periodically before the user's robot code.
         This method updates the log table with new data, either from the replay source
         or from the live robot hardware.
+
+        You should not need to call this method, as it is called automatically by a LoggedRobot
         """
         cls.cycleCount += 1
         if cls.running:
@@ -309,6 +318,8 @@ class Logger:
         Called periodically after the user's robot code.
         This method finalizes the log entry for the current cycle by recording outputs,
         performance data, and then sends the log table to all registered receivers.
+
+        You should not need to call this method, as it is called automatically by a LoggedRobot
 
         :param userCodeLength: The execution time of the user's code in microseconds.
         :param periodicBeforeLength: The execution time of the `periodicBeforeUser` method in microseconds.
