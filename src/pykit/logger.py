@@ -269,7 +269,12 @@ class Logger:
                 rs = cls.replaySource
                 if rs is None or not rs.updateTable(cls.entry):
                     print("End of replay reached")
-                    cls.end()
+                    if cls.cycleCount == 1:
+                        print(
+                            "[ERROR] This robot did not start properly, is the replay logfile from PyKit?"
+                        )
+                    else:
+                        cls.end()
                     raise SystemExit(0)
 
             dsStart = RobotController.getFPGATime()
