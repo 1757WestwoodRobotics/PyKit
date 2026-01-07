@@ -40,7 +40,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: template_projects/kitbot_2025.zip
+          asset_path: template_projects/generated/kitbot_2025.zip
           asset_name: PyKit_KitBot2025Template.zip
           asset_content_type: application/zip
       - name: Upload template project (diff_drive)
@@ -50,7 +50,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: template_projects/diff_drive.zip
+          asset_path: template_projects/generated/diff_drive.zip
           asset_name: PyKit_DifferentialDriveTemplate.zip
           asset_content_type: application/zip
       - name: Upload template project (skeleton)
@@ -60,7 +60,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: template_projects/skeleton.zip
+          asset_path: template_projects/generated/skeleton.zip
           asset_name: PyKit_SkeletonTemplate.zip
           asset_content_type: application/zip
       - name: Publish

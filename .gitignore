@@ -195,3 +195,4 @@ pyrightconfig.json
 
 # Generated templates
 /template_projects/*.zip
+template_projects/generated
