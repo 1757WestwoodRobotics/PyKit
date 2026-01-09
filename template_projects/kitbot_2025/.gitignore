@@ -2,6 +2,7 @@ simgui-ds.json
 simgui-window.json
 simgui.json
 networktables.json
+pyLogs
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
