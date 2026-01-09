@@ -6,7 +6,8 @@ from tempfile import gettempdir
 from typing import TYPE_CHECKING
 
 from hal import MatchType
-from wpilib import DataLogManager, RobotBase, RobotController
+from wpilib import RobotBase, RobotController
+from wpiutil import DataLogWriter
 from pykit.logdatareciever import LogDataReciever
 from pykit.logger import Logger
 from pykit.logtable import LogTable
@@ -66,7 +67,7 @@ class WPILOGWriter(LogDataReciever):
             if filename is not None
             else f"pykit_{self.randomIdentifier}.wpilog"
         )
-        self.autoRename = False
+        self.autoRename = filename is None
 
     def start(self) -> None:
         """
@@ -82,16 +83,11 @@ class WPILOGWriter(LogDataReciever):
         if os.path.exists(fullPath):
             print("[WPILogWriter] File exists, overwriting")
             os.remove(fullPath)
-        if not RobotBase.isReal():
-            DataLogManager.stop()
         try:
-            DataLogManager.start(self.folder, self.filename)
+            self.log = DataLogWriter(fullPath, wpilogconstants.extraHeader)
         except PermissionError as e:
-            print(f"Failed to open WPILOG file! ({e})")
+            print(f"[WPILogWriter] Failed to open WPILOG file! ({e})")
             return
-        print(DataLogManager.getLogDir())
-        DataLogManager.logNetworkTables(False)
-        self.log = DataLogManager.getLog()
 
         self.isOpen = True
         self.timestampId = self.log.start(
@@ -106,7 +102,7 @@ class WPILOGWriter(LogDataReciever):
         self.entryTypes: dict[str, LogValue.LoggableType] = {}
         self.entryUnits: dict[str, str] = {}
         self.logDate = None
-        self.logMatchText = f"pykit_{self.randomIdentifier}"
+        self.logMatchText = ""
 
     def end(self) -> None:
         """
@@ -197,21 +193,9 @@ class WPILOGWriter(LogDataReciever):
                 if self.filename != filename:
                     # Rename log file by closing current and opening new
                     print(f"[WPILogWriter] Renaming log to {filename}")
-                    self.log.stop()
                     fullPath = os.path.join(self.folder, self.filename)
-                    if os.path.exists(fullPath):
-                        print(f"[WPILogWriter] Old file removed ({self.filename})")
-                        os.remove(fullPath)
+                    os.rename(fullPath, os.path.join(self.folder, filename))
 
-                    DataLogManager.stop()
-                    DataLogManager.start(self.folder, filename)
-                    self.log = DataLogManager.getLog()
-                    self.timestampId = self.log.start(
-                        "/Timestamp",
-                        LogValue.LoggableType.Integer.getWPILOGType(),
-                        wpilogconstants.entryMetadata,
-                        0,
-                    )
                     self.filename = filename
 
         # Write timestamp entry
