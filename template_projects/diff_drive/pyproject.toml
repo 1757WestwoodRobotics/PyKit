@@ -1,5 +1,5 @@
 [project]
-name = "pykit_kitbot_2025"
+name = "pykit_diffdrive"
 version = "0.1.0"
 description = "An FRC Robot"
 readme = "README.md"
