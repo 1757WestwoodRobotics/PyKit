@@ -12,12 +12,12 @@ license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 keywords = ["pykit", "frc", "robotics", "logging", "telemetry", "replay"]
 dependencies = [
-    "pyntcore >=2025.3.2.2",
-    "robotpy-wpimath >=2025.3.2.2",
-    "robotpy-wpiutil >=2025.3.2.2",
-    "wpilib>=2025.3.2.2",
-    "robotpy-hal >=2025.3.2.2",
-    "pyfrc >= 2025.1.0",
+    "pyntcore >=2026.1.1",
+    "robotpy-wpimath >=2026.1.1",
+    "robotpy-wpiutil >=2026.1.1",
+    "wpilib>=2026.1.1",
+    "robotpy-hal >=2026.1.1",
+    "pyfrc >= 2026.0.1",
 ]
 requires-python = ">=3.10"
 

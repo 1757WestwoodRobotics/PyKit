@@ -5,25 +5,25 @@ description = "An FRC Robot"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "wpilib>=2025.3.2.2",
+    "wpilib>=2026.1.1",
     "robotpy-pykit==0.2.3",
     "robotpy-pykit-watch==0.2.0",
-    "robotpy-halsim-gui>=2025.3.2.2",
-    "robotpy>=2025.3.2.2",
-    "robotpy-cli>=2024.0.0",
+    "robotpy-halsim-gui>=2026.1.1",
+    "robotpy-cli>=2026.0.1",
     "black>=25.9.8",
     "pylint>=4.0.2",
-    "robotpy-pathplannerlib>=2025.2.7",
-    "phoenix6>=25.4.2",
+    "robotpy-pathplannerlib>=2026.1.1",
+    "phoenix6>=26.1.0",
     "robotpy-navx>=2025.0.1.2",
-    "robotpy-rev>=2025.0.3.1",
-    "robotpy-commands-v2>=2025.3.2",
+    "robotpy-rev>=2026.0.0",
+    "robotpy-commands-v2>=2026.1.1",
+    "robotpy-installer>=2026.0.1",
 ]
 
 [tool.robotpy]
 
 # Version of robotpy this project depends on
-robotpy_version = "2025.3.2.2"
+robotpy_version = "2026.1.1"
 robotpy_extras = [
   "sim",
   "commands2",
