@@ -90,7 +90,10 @@ class AutoLogOutputManager:
                 and not isinstance(instance, staticmethod)
             ):
                 # Recursively publish sub-members for classes marked for autolog
-                cls.publish_all(table, instance.__dict__.values())
+                vals = list(instance.__dict__.values())
+                if instance in vals:
+                    vals.remove(instance)  # Avoid infinite recursion
+                cls.publish_all(table, vals)
 
     @classmethod
     def register_member(
