@@ -80,7 +80,13 @@ class LoggedRobot(IterativeRobotBase):
                 else:
                     hal.updateNotifierAlarm(self.notifier, int(self._nextCycleUs))
 
-                    currentTimeOrStopped, status = hal.waitForNotifierAlarm(self.notifier)
+                    currentTimeOrStopped, status = hal.waitForNotifierAlarm(
+                        self.notifier
+                    )
+                    if status != 0:
+                        raise RuntimeError(
+                            f"Error waiting for notifier alarm: status {status}"
+                        )
                     if currentTimeOrStopped == 0:
                         break
                 self._nextCycleUs += self._periodUs
