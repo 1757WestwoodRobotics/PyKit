@@ -29,8 +29,18 @@ class LoggedRobot(IterativeRobotBase):
         """
         IterativeRobotBase.__init__(self, LoggedRobot.default_period)
         self.useTiming = True
-        self._nextCycleUs = 0
+
         self._periodUs = int(self.getPeriod() * 1000000)
+
+        # Because in "robotpy test" this code starts at time 0
+        # and hal.waitForNotifierAlarm returns (current_time_or_stopped, status)
+        # with current_time_or_stopped assigned to 0 when hal.stopNotifier is called
+        # or when the the current time is 0, and hal.stopNotifier is signal to
+        # exit the infinite loop, the stop is prematurely detected at time 0.
+        # Force the program to wait until self._periodUs for the first periodic loop
+        # so that current_time_or_stopped will contain a non-zero current time and the
+        # infinite loop does not end prematurely.
+        self._nextCycleUs = 0 + self._periodUs
 
         self.notifier = hal.initializeNotifier()[0]
         self.watchdog = Watchdog(LoggedRobot.default_period, self.printOverrunMessage)
@@ -69,7 +79,9 @@ class LoggedRobot(IterativeRobotBase):
                     self._nextCycleUs = currentTime
                 else:
                     hal.updateNotifierAlarm(self.notifier, int(self._nextCycleUs))
-                    if hal.waitForNotifierAlarm(self.notifier) == 0:
+
+                    currentTimeOrStopped, status = hal.waitForNotifierAlarm(self.notifier)
+                    if currentTimeOrStopped == 0:
                         break
                 self._nextCycleUs += self._periodUs
 
