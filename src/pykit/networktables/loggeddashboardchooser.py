@@ -18,10 +18,10 @@ class LoggedDashboardChooser(LoggedNetworkInput, Generic[T]):
 
     key: str
     selectedValue: str = ""
-    previousValue: Optional[str] = None
-    listener: Optional[Callable[[T], None]] = None
+    previousValue: Optional[str]
+    listener: Optional[Callable[[T], None]]
 
-    sendableChooser: SendableChooser = SendableChooser()
+    sendableChooser: SendableChooser
 
     options: dict[str, T] = {}
 
@@ -32,6 +32,9 @@ class LoggedDashboardChooser(LoggedNetworkInput, Generic[T]):
         :param key: The key to use for publishing the chooser to SmartDashboard.
         """
         self.key = key
+        self.sendableChooser = SendableChooser()
+        self.previousValue = None
+        self.listener = None
         SmartDashboard.putData(key, self.sendableChooser)
         self.periodic()
 
