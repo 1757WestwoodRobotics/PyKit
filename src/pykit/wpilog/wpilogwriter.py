@@ -75,7 +75,11 @@ class WPILOGWriter(LogDataReciever):
         """
         # Create folder if necessary
         if not os.path.exists(self.folder):
-            os.makedirs(self.folder)
+            try:
+                os.makedirs(self.folder)
+            except PermissionError as e:
+                print(f"[WPILogWriter] Failed to create log folder! ({e})")
+                return
 
         # Initialize the WPILOG file
         fullPath = os.path.join(self.folder, self.filename)
