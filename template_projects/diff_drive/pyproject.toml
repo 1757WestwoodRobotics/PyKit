@@ -33,5 +33,5 @@ robotpy_extras = [
   "pathplannerlib"
 ]
 requires = [
-  "robotpy-pykit==1.0.3",
+  "robotpy-pykit==1.0.4",
 ]
