@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "wpilib>=2026.1.1",
-    "robotpy-pykit==1.0.3",
+    "robotpy-pykit==1.0.5",
     "robotpy-pykit-watch==1.0.0",
     "robotpy-halsim-gui>=2026.1.1",
     "robotpy-cli>=2026.0.1",
@@ -33,5 +33,5 @@ robotpy_extras = [
   "pathplannerlib"
 ]
 requires = [
-  "robotpy-pykit==1.0.4",
+  "robotpy-pykit==1.0.5",
 ]
