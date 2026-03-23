@@ -48,20 +48,38 @@ class WPILOGWriter(LogDataReciever):
     entryTypes: dict[str, LogValue.LoggableType]
     entryUnits: dict[str, str]
 
-    def __init__(self, filename: str | None = None) -> None:
+    def __init__(self, filename: str | None = None, path: str | None = None) -> None:
         """
         Initializes the WPILOGWriter.
 
         :param filename: The path to the `.wpilog` file. If None, a default path is used,
                          and the file is named with a random identifier.
+        :param path: The directory to save the log file. If None, a default path is used based
+                         on whether it's running in simulation or on the robot.
+
+        in the event that both a filename and a path are provided, the combination of the path and
+        the filename will be used in determining the location of where to put the log file
         """
-        path = self.defaultPathSim if RobotBase.isSimulation() else self.defaultPathRio
+        actualPath = (
+            (self.defaultPathSim if RobotBase.isSimulation() else self.defaultPathRio)
+            if path is None
+            else path
+        )
 
         self.randomIdentifier = f"{random.randint(0, 0xFFFF):04X}"
 
-        self.folder = os.path.abspath(
-            os.path.dirname(filename) if filename is not None else path
-        )
+        if path is None:
+            self.folder = os.path.abspath(
+                os.path.dirname(filename) if filename is not None else actualPath
+            )
+        else:
+            # need to combine if both are specified
+            self.folder = os.path.abspath(
+                os.path.join(actualPath, os.path.dirname(filename))
+                if filename is not None
+                else actualPath
+            )
+
         self.filename = (
             os.path.basename(filename)
             if filename is not None
