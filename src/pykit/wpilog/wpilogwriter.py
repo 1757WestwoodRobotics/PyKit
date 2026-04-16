@@ -36,7 +36,7 @@ class WPILOGWriter(LogDataReciever):
     folder: str
     filename: str
     randomIdentifier: str
-    dsAttachedTime: int = 0
+    dsAttachedTime: float = 0.0
     autoRename: bool
     logDate: datetime.datetime | None
     logMatchText: str
@@ -172,7 +172,7 @@ class WPILOGWriter(LogDataReciever):
                     ) > 5 or RobotBase.isSimulation():
                         self.logDate = datetime.datetime.now()
                 else:
-                    self.dsAttachedTime = 0
+                    self.dsAttachedTime = 0.0
 
                 matchType: MatchType
                 match table.get("DriverStation/MatchType", 0):
