@@ -246,18 +246,16 @@ class Logger:
 
         :return: The current timestamp in microseconds.
         """
-        if cls.isReplay():
-            return cls.entry.getTimestamp()
-        # RobotController.getFPGATime may be untyped; ensure int
-        return int(RobotController.getFPGATime())
+        return cls.entry.getTimestamp()
 
     @classmethod
-    def periodicBeforeUser(cls):
+    def periodicBeforeUser(cls) -> bool:
         """
         Called periodically before the user's robot code.
         This method updates the log table with new data, either from the replay source
         or from the live robot hardware.
         """
+        stop = False
         cls.cycleCount += 1
         if cls.running:
             entryUpdateStart = RobotController.getFPGATime()
@@ -273,9 +271,7 @@ class Logger:
                         print(
                             "[ERROR] This robot did not start properly, is the replay logfile from PyKit?"
                         )
-                    else:
-                        cls.end()
-                    raise SystemExit(0)
+                    stop = True
 
             dsStart = RobotController.getFPGATime()
             # In replay mode, simulate driver station inputs from log
@@ -302,6 +298,7 @@ class Logger:
                 "Logger/DashboardInputsMS",
                 (dashboardInputEnd - dashboardInputStart) / 1000.0,
             )
+        return stop
 
     @classmethod
     def periodicAfterUser(cls, userCodeLength: int, periodicBeforeLength: int):
